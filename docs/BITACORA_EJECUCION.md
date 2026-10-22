@@ -119,3 +119,10 @@ El listado de archivos, descripción de cada captura y guía de inserción en el
 - Se renumeraron las citas en el cuerpo y se simplificaron los pasajes de Kafka, Delta Lake y observabilidad que dependían de fuentes retiradas, para evitar citas sin referencia. También se quitó la referencia de Airflow que no tenía cita en el texto.
 - Se reemplazaron los espacios finales de las líneas de portada por saltos de línea explícitos para que `git diff --check` no marque esos renglones.
 - Se debe regenerar la vista HTML cada vez que se cierre una actualización del Markdown; ambas versiones se actualizaron con esta reducción.
+
+## Borrador de informe Word
+
+- Se generó `docs/BORRADOR_INFORME_APLICADO_BIGDATA.docx` desde el borrador Markdown con Pandoc. Para conservar los cinco diagramas SVG en Word, se rasterizaron temporalmente a PNG de alta resolución; los SVG originales no se modificaron y el DOCX contiene los gráficos embebidos.
+- Se exportó temporalmente el DOCX a PDF con LibreOffice para verificar estructura, legibilidad y paginación. La comprobación reportó 42 páginas, formato carta y 30 imágenes embebidas: 25 capturas y cinco diagramas.
+- La versión actual es preliminar: el índice de evidencias confirma 12 capturas explícitas de VS Code y faltan tres para cumplir 15 bajo la interpretación estricta de la consigna. El documento no debe tratarse aún como versión final.
+- El PDF de revisión y las imágenes PNG temporales se guardaron en `/tmp`; no se incluyeron en el repositorio. El empaquetado del proyecto no se inició, según la instrucción del usuario.

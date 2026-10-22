@@ -370,13 +370,25 @@ El esquema de la Figura 1 distingue el camino local que sí se ejecutó de los s
 
 ## 7. Mejoras aplicadas y comparación
 
-| N.º | Archivo | Hallazgo | Cambio | Evidencia de resultado |
-|---:|---|---|---|---|
-| 1 | `src/resiliencia/replicacion.py` | Una latencia base de 1 ms más ruido aleatorio de −2 a 2 ms podía producir un valor negativo y detener `time.sleep()`. | Se limitó la latencia simulada con `max(0.0, ...)`. | Bloque 5 y demo integral concluyeron después del cambio; la demo compartida terminó en 4,75 s y luego 4,73 s. |
-| 2 | `src/resiliencia/particionamiento.py` | Se volvía a hashear una clave con solo tres etiquetas, dejando un shard vacío. | Se priorizó `cliente_id`, de mayor cardinalidad en los datos generados. | En 500 registros: de 167/333/0 a 155/169/176; balance reportado 88,1 %. |
-| 3 | `src/recuperacion/plan_drp.py` | El ciclo copiaba únicamente los últimos 100 registros al standby. | Se copiaron los registros posteriores al conteo ya sincronizado. | En una muestra de 200: de 100 recuperados/100 perdidos a 200/0 y cero brechas. |
-| 4 | `src/procesamiento/motor_batch.py` y `README.md` | `datetime.utcnow()` generaba advertencia de obsolescencia; la instrucción directa del DRP no resolvía `src`. | Se usó `datetime.now(timezone.utc)` y se cambió el comando del README a `python -m src.recuperacion.plan_drp`. | El ETL completó en 0,047 s, sin advertencia, con 500 entradas y 499 válidas. |
-| 5 | `src/recuperacion/plan_drp.py`, `tests/test_mejoras_aplicadas.py` y `README.md` | El repositorio documentaba comandos de pytest, pero no tenía una carpeta de pruebas; la sincronización DRP estaba integrada dentro del hilo y era difícil de comprobar aisladamente. | Se extrajo `_replicar_pendientes()` y se añadieron pruebas de regresión para latencia no negativa, uso de los tres shards y sincronización DRP incremental sin duplicados. Se actualizó el comando de pytest del README. | El usuario ejecutó `python -m pytest tests/test_mejoras_aplicadas.py -v`: 3 pruebas pasaron en 0,16 s; la captura de VS Code quedó archivada como evidencia 27. |
+### 7.1 Límite inferior para la latencia simulada
+
+**Archivo:** `src/resiliencia/replicacion.py`. La combinación de una latencia base de 1 ms y una variación aleatoria de −2 a 2 ms podía generar un valor negativo y detener `time.sleep()`. Se limitó la latencia con `max(0.0, ...)`. Después del cambio, el bloque 5 y la demo integral concluyeron; las corridas compartidas de la demo terminaron en 4,75 s y 4,73 s.
+
+### 7.2 Distribución hash entre shards
+
+**Archivo:** `src/resiliencia/particionamiento.py`. La implementación volvía a hashear una clave que ya tenía solo tres etiquetas de shard, y la corrida base dejó un shard vacío. Se priorizó `cliente_id`, con mayor cardinalidad en los datos generados. En una muestra de 500 transacciones, el resultado pasó de 167/333/0 a 155/169/176; el módulo informó un balance de 88,1 %.
+
+### 7.3 Sincronización incremental del simulador DRP
+
+**Archivo:** `src/recuperacion/plan_drp.py`. El ciclo copiaba solo los últimos 100 registros al sitio standby. Se cambió para continuar desde la cantidad ya sincronizada y copiar los registros pendientes. En la muestra de 200 transacciones, el simulacro pasó de 100 recuperadas/100 posiblemente perdidas a 200 recuperadas/0 perdidas y cero brechas.
+
+### 7.4 Marcas temporales y comando de ejecución
+
+**Archivos:** `src/procesamiento/motor_batch.py` y `README.md`. `datetime.utcnow()` generaba una advertencia de obsolescencia, y la invocación directa del DRP no resolvía el paquete `src`. Se utilizó `datetime.now(timezone.utc)` y se documentó `python -m src.recuperacion.plan_drp`. El ETL completó en 0,047 s, sin advertencia, con 500 entradas y 499 válidas.
+
+### 7.5 Pruebas de regresión
+
+**Archivos:** `src/recuperacion/plan_drp.py`, `tests/test_mejoras_aplicadas.py` y `README.md`. Se extrajo `_replicar_pendientes()` para probar la sincronización sin iniciar el hilo de fondo y se añadieron tres pruebas: latencia no negativa, distribución en los tres shards y sincronización DRP incremental sin duplicados. El usuario ejecutó `python -m pytest tests/test_mejoras_aplicadas.py -v`; pasaron las tres pruebas en 0,16 s. La captura está archivada como evidencia 27.
 
 Las mejoras de latencia, sharding y DRP, la corrección UTC, las pruebas de regresión y los diagramas se guardaron en commits del repositorio, incluido `d72ace5`. Las tres pruebas de regresión pasaron en la ejecución informada por el usuario. Para el cumplimiento estricto del requisito docente aún se requieren tres capturas únicas adicionales desde VS Code.
 
@@ -414,7 +426,7 @@ Las mejoras de latencia, sharding y DRP, la corrección UTC, las pruebas de regr
 7. Separar una ruta de demo liviana de una instalación de stack completo y documentar qué comandos requieren Docker, Java, Spark o Airflow.
 8. Ampliar las pruebas automatizadas con escenarios de RPO y fallos de sincronización; mantener la ejecución de la suite antes de futuras modificaciones de resiliencia.
 9. Revisar el `docker-compose.yml` antes de presentar propiedades de alta disponibilidad: la configuración inspeccionada usa un broker Kafka y factor de replicación 1; sus comentarios no bastan para demostrar tolerancia a fallos.
-10. Para la entrega, crear el `.docx` con estilos de títulos, índice automático, pies de figura, numeración de páginas y al menos 14 páginas; después revisar el documento exportado visualmente. Comprimir por separado el proyecto actualizado, excluyendo `.venv`, `.env`, cachés y archivos temporales.
+10. Revisar el DOCX generado con los estilos de títulos, contenido, pies de figura y 42 páginas; comprobar su visualización en Word o LibreOffice y mantener al menos 14 páginas. La versión actual sigue siendo preliminar hasta completar las capturas de VS Code pendientes. El empaquetado del proyecto se hará en una etapa posterior.
 
 ## 11. Referencias
 
@@ -460,12 +472,13 @@ python src/monitoreo/observabilidad.py
 
 El catálogo con 37 capturas, su descripción y notas de línea base/posterior se encuentra en [`evidencias/INDICE_EVIDENCIAS.md`](evidencias/INDICE_EVIDENCIAS.md). Para el Word, seleccionar figuras variadas y legibles, mantener las capturas originales y añadir pies que indiquen el comando y el hallazgo que se observa.
 
-### Anexo C. Pendientes antes de convertir a Word
+### Anexo C. Pendientes antes de la entrega final
 
 - [x] Institución: Universidad Amazónica de Pando; autor consignado: Ruben Cabrera. Confirmar si deben añadirse integrantes, cohorte o ciudad de presentación.
 - [ ] Añadir al menos 3 capturas adicionales de ejecución en VS Code si se requiere que las 15 sean explícitamente de ese entorno.
 - [ ] Revisar que la corrida escogida para cada cifra coincide con la captura citada.
 - [ ] Dar formato APA 7 o el estilo requerido por el docente y comprobar los datos bibliográficos.
-- [ ] Generar índice automático, numerar figuras y verificar que el `.docx` final tenga 14 páginas o más.
+- [x] Crear el borrador DOCX y comprobar que supera el mínimo de 14 páginas; revisar nuevamente después de las últimas correcciones.
 - [ ] Incluir conclusiones y recomendaciones revisadas por el grupo.
-- [ ] Comprimir el proyecto final sin `.env`, `.venv`, cachés ni salidas temporales de ejecución.
+- [ ] Completar la revisión visual final del DOCX y sus figuras.
+- [ ] Preparar el archivo comprimido del proyecto en la etapa acordada, sin `.env`, `.venv`, cachés ni salidas temporales de ejecución.

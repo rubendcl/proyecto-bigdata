@@ -235,6 +235,28 @@
     code span.vs { color: #4070a0; } /* VerbatimString */
     code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
   </style>
+  <style>
+    /* Lectura a ancho amplio en pantalla; conserva márgenes y escala en móvil. */
+    body {
+      box-sizing: border-box;
+      width: 100%;
+      max-width: none;
+      margin: 0;
+      padding: clamp(16px, 2.5vw, 40px);
+    }
+    img, svg {
+      max-width: 100%;
+      height: auto;
+    }
+    table {
+      width: 100%;
+      table-layout: auto;
+    }
+    @media (max-width: 600px) {
+      body { padding: 16px; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
 </head>
 <body>
 <header id="title-block-header">
@@ -926,78 +948,52 @@ sintéticas de 500 registros; los valores son ilustrativos, no una
 garantía estadística.</p>
 <h2 id="7-mejoras-aplicadas-y-comparación">7. Mejoras aplicadas y
 comparación</h2>
-<table>
-<thead>
-<tr>
-<th style="text-align: right;">N.º</th>
-<th>Archivo</th>
-<th>Hallazgo</th>
-<th>Cambio</th>
-<th>Evidencia de resultado</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: right;">1</td>
-<td><code>src/resiliencia/replicacion.py</code></td>
-<td>Una latencia base de 1 ms más ruido aleatorio de −2 a 2 ms podía
-producir un valor negativo y detener <code>time.sleep()</code>.</td>
-<td>Se limitó la latencia simulada con <code>max(0.0, ...)</code>.</td>
-<td>Bloque 5 y demo integral concluyeron después del cambio; la demo
-compartida terminó en 4,75 s y luego 4,73 s.</td>
-</tr>
-<tr>
-<td style="text-align: right;">2</td>
-<td><code>src/resiliencia/particionamiento.py</code></td>
-<td>Se volvía a hashear una clave con solo tres etiquetas, dejando un
-shard vacío.</td>
-<td>Se priorizó <code>cliente_id</code>, de mayor cardinalidad en los
-datos generados.</td>
-<td>En 500 registros: de 167/333/0 a 155/169/176; balance reportado 88,1
-%.</td>
-</tr>
-<tr>
-<td style="text-align: right;">3</td>
-<td><code>src/recuperacion/plan_drp.py</code></td>
-<td>El ciclo copiaba únicamente los últimos 100 registros al
-standby.</td>
-<td>Se copiaron los registros posteriores al conteo ya
-sincronizado.</td>
-<td>En una muestra de 200: de 100 recuperados/100 perdidos a 200/0 y
-cero brechas.</td>
-</tr>
-<tr>
-<td style="text-align: right;">4</td>
-<td><code>src/procesamiento/motor_batch.py</code> y
-<code>README.md</code></td>
-<td><code>datetime.utcnow()</code> generaba advertencia de
-obsolescencia; la instrucción directa del DRP no resolvía
-<code>src</code>.</td>
-<td>Se usó <code>datetime.now(timezone.utc)</code> y se cambió el
-comando del README a
-<code>python -m src.recuperacion.plan_drp</code>.</td>
-<td>El ETL completó en 0,047 s, sin advertencia, con 500 entradas y 499
-válidas.</td>
-</tr>
-<tr>
-<td style="text-align: right;">5</td>
-<td><code>src/recuperacion/plan_drp.py</code>,
-<code>tests/test_mejoras_aplicadas.py</code> y
-<code>README.md</code></td>
-<td>El repositorio documentaba comandos de pytest, pero no tenía una
-carpeta de pruebas; la sincronización DRP estaba integrada dentro del
-hilo y era difícil de comprobar aisladamente.</td>
-<td>Se extrajo <code>_replicar_pendientes()</code> y se añadieron
-pruebas de regresión para latencia no negativa, uso de los tres shards y
-sincronización DRP incremental sin duplicados. Se actualizó el comando
-de pytest del README.</td>
-<td>El usuario ejecutó
-<code>python -m pytest tests/test_mejoras_aplicadas.py -v</code>: 3
-pruebas pasaron en 0,16 s; la captura de VS Code quedó archivada como
-evidencia 27.</td>
-</tr>
-</tbody>
-</table>
+<h3 id="71-límite-inferior-para-la-latencia-simulada">7.1 Límite
+inferior para la latencia simulada</h3>
+<p><strong>Archivo:</strong>
+<code>src/resiliencia/replicacion.py</code>. La combinación de una
+latencia base de 1 ms y una variación aleatoria de −2 a 2 ms podía
+generar un valor negativo y detener <code>time.sleep()</code>. Se limitó
+la latencia con <code>max(0.0, ...)</code>. Después del cambio, el
+bloque 5 y la demo integral concluyeron; las corridas compartidas de la
+demo terminaron en 4,75 s y 4,73 s.</p>
+<h3 id="72-distribución-hash-entre-shards">7.2 Distribución hash entre
+shards</h3>
+<p><strong>Archivo:</strong>
+<code>src/resiliencia/particionamiento.py</code>. La implementación
+volvía a hashear una clave que ya tenía solo tres etiquetas de shard, y
+la corrida base dejó un shard vacío. Se priorizó
+<code>cliente_id</code>, con mayor cardinalidad en los datos generados.
+En una muestra de 500 transacciones, el resultado pasó de 167/333/0 a
+155/169/176; el módulo informó un balance de 88,1 %.</p>
+<h3 id="73-sincronización-incremental-del-simulador-drp">7.3
+Sincronización incremental del simulador DRP</h3>
+<p><strong>Archivo:</strong> <code>src/recuperacion/plan_drp.py</code>.
+El ciclo copiaba solo los últimos 100 registros al sitio standby. Se
+cambió para continuar desde la cantidad ya sincronizada y copiar los
+registros pendientes. En la muestra de 200 transacciones, el simulacro
+pasó de 100 recuperadas/100 posiblemente perdidas a 200 recuperadas/0
+perdidas y cero brechas.</p>
+<h3 id="74-marcas-temporales-y-comando-de-ejecución">7.4 Marcas
+temporales y comando de ejecución</h3>
+<p><strong>Archivos:</strong>
+<code>src/procesamiento/motor_batch.py</code> y <code>README.md</code>.
+<code>datetime.utcnow()</code> generaba una advertencia de
+obsolescencia, y la invocación directa del DRP no resolvía el paquete
+<code>src</code>. Se utilizó <code>datetime.now(timezone.utc)</code> y
+se documentó <code>python -m src.recuperacion.plan_drp</code>. El ETL
+completó en 0,047 s, sin advertencia, con 500 entradas y 499
+válidas.</p>
+<h3 id="75-pruebas-de-regresión">7.5 Pruebas de regresión</h3>
+<p><strong>Archivos:</strong> <code>src/recuperacion/plan_drp.py</code>,
+<code>tests/test_mejoras_aplicadas.py</code> y <code>README.md</code>.
+Se extrajo <code>_replicar_pendientes()</code> para probar la
+sincronización sin iniciar el hilo de fondo y se añadieron tres pruebas:
+latencia no negativa, distribución en los tres shards y sincronización
+DRP incremental sin duplicados. El usuario ejecutó
+<code>python -m pytest tests/test_mejoras_aplicadas.py -v</code>;
+pasaron las tres pruebas en 0,16 s. La captura está archivada como
+evidencia 27.</p>
 <p>Las mejoras de latencia, sharding y DRP, la corrección UTC, las
 pruebas de regresión y los diagramas se guardaron en commits del
 repositorio, incluido <code>d72ace5</code>. Las tres pruebas de
@@ -1107,11 +1103,11 @@ modificaciones de resiliencia.</li>
 propiedades de alta disponibilidad: la configuración inspeccionada usa
 un broker Kafka y factor de replicación 1; sus comentarios no bastan
 para demostrar tolerancia a fallos.</li>
-<li>Para la entrega, crear el <code>.docx</code> con estilos de títulos,
-índice automático, pies de figura, numeración de páginas y al menos 14
-páginas; después revisar el documento exportado visualmente. Comprimir
-por separado el proyecto actualizado, excluyendo <code>.venv</code>,
-<code>.env</code>, cachés y archivos temporales.</li>
+<li>Revisar el DOCX generado con los estilos de títulos, contenido, pies
+de figura y 42 páginas; comprobar su visualización en Word o LibreOffice
+y mantener al menos 14 páginas. La versión actual sigue siendo
+preliminar hasta completar las capturas de VS Code pendientes. El
+empaquetado del proyecto se hará en una etapa posterior.</li>
 </ol>
 <h2 id="11-referencias">11. Referencias</h2>
 <p>[1] Lin, J. (2017). The Lambda and the Kappa. <em>IEEE Internet
@@ -1163,8 +1159,8 @@ href="evidencias/INDICE_EVIDENCIAS.md"><code>evidencias/INDICE_EVIDENCIAS.md</co
 Para el Word, seleccionar figuras variadas y legibles, mantener las
 capturas originales y añadir pies que indiquen el comando y el hallazgo
 que se observa.</p>
-<h3 id="anexo-c-pendientes-antes-de-convertir-a-word">Anexo C.
-Pendientes antes de convertir a Word</h3>
+<h3 id="anexo-c-pendientes-antes-de-la-entrega-final">Anexo C.
+Pendientes antes de la entrega final</h3>
 <ul class="task-list">
 <li><label><input type="checkbox" checked="" />Institución: Universidad
 Amazónica de Pando; autor consignado: Ruben Cabrera. Confirmar si deben
@@ -1177,13 +1173,16 @@ cada cifra coincide con la captura citada.</label></li>
 <li><label><input type="checkbox" />Dar formato APA 7 o el estilo
 requerido por el docente y comprobar los datos
 bibliográficos.</label></li>
-<li><label><input type="checkbox" />Generar índice automático, numerar
-figuras y verificar que el <code>.docx</code> final tenga 14 páginas o
-más.</label></li>
+<li><label><input type="checkbox" checked="" />Crear el borrador DOCX y
+comprobar que supera el mínimo de 14 páginas; revisar nuevamente después
+de las últimas correcciones.</label></li>
 <li><label><input type="checkbox" />Incluir conclusiones y
 recomendaciones revisadas por el grupo.</label></li>
-<li><label><input type="checkbox" />Comprimir el proyecto final sin
-<code>.env</code>, <code>.venv</code>, cachés ni salidas temporales de
+<li><label><input type="checkbox" />Completar la revisión visual final
+del DOCX y sus figuras.</label></li>
+<li><label><input type="checkbox" />Preparar el archivo comprimido del
+proyecto en la etapa acordada, sin <code>.env</code>,
+<code>.venv</code>, cachés ni salidas temporales de
 ejecución.</label></li>
 </ul>
 </body>
