@@ -83,7 +83,9 @@ class NodoReplicacion:
         if self.estado == EstadoNodo.CAIDO:
             return False, 0.0
 
-        latencia = self.latencia_red_ms + random.uniform(-2, 2)
+        # La variación aleatoria puede superar latencias base pequeñas (p. ej. 1 ms).
+        # Una latencia de red simulada no puede ser negativa.
+        latencia = max(0.0, self.latencia_red_ms + random.uniform(-2, 2))
         time.sleep(latencia / 1000)  # Simula latencia de red
 
         with self._lock:
