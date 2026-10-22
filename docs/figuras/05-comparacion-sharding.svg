@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="600" viewBox="0 0 1200 600" role="img" aria-labelledby="title desc">
+  <title id="title">Comparación de distribución hash antes y después de la mejora</title>
+  <desc id="desc">En la línea base uno de tres shards estaba vacío; al priorizar cliente_id, los tres shards recibieron registros en una muestra posterior.</desc>
+  <defs><style>text{font-family:Arial,sans-serif;fill:#203247}.title{font-size:27px;font-weight:700}.sub{font-size:15px;fill:#60758a}.heading{font-size:19px;font-weight:700}.lab{font-size:15px}.count{font-size:14px;font-weight:700}.note{font-size:13px;fill:#5c7184}.bar0{fill:#4f81bd}.bar1{fill:#65a88b}.bar2{fill:#9b83c5}.panel{fill:#f8fafc;stroke:#d4dde6;stroke-width:1.5;rx:14}</style></defs>
+  <rect width="1200" height="600" fill="#fff"/><text x="50" y="54" class="title">Sharding hash: efecto de la clave de distribución</text><text x="50" y="82" class="sub">Comparación ilustrativa de dos corridas sintéticas de 500 registros</text>
+  <rect x="55" y="120" width="510" height="365" class="panel"/><rect x="635" y="120" width="510" height="365" class="panel"/>
+  <text x="310" y="160" text-anchor="middle" class="heading">Antes: clave shard_key de baja cardinalidad</text>
+  <text x="890" y="160" text-anchor="middle" class="heading">Después: priorizar cliente_id</text>
+  <text x="95" y="230" class="lab">shard_0</text><rect x="195" y="208" width="120" height="28" rx="5" class="bar0"/><text x="330" y="229" class="count">167</text>
+  <text x="95" y="295" class="lab">shard_1</text><rect x="195" y="273" width="240" height="28" rx="5" class="bar1"/><text x="450" y="294" class="count">333</text>
+  <text x="95" y="360" class="lab">shard_2</text><text x="195" y="359" class="note">sin registros</text>
+  <text x="95" y="425" class="note">Balance reportado: 0 % · hotspot detectado</text>
+  <text x="675" y="230" class="lab">shard_0</text><rect x="775" y="208" width="112" height="28" rx="5" class="bar0"/><text x="902" y="229" class="count">155</text>
+  <text x="675" y="295" class="lab">shard_1</text><rect x="775" y="273" width="122" height="28" rx="5" class="bar1"/><text x="912" y="294" class="count">169</text>
+  <text x="675" y="360" class="lab">shard_2</text><rect x="775" y="338" width="127" height="28" rx="5" class="bar2"/><text x="917" y="359" class="count">176</text>
+  <text x="675" y="425" class="note">Balance reportado: 88,1 % · sin hotspot</text>
+  <text x="55" y="530" class="note">Corridas independientes con datos sintéticos. El balance es la métrica simple del prototipo; no garantiza equilibrio para cualquier carga.</text>
+</svg>

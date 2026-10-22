@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="540" viewBox="0 0 1100 540" role="img" aria-labelledby="title desc">
+  <title id="title">Estados del patrón Circuit Breaker</title>
+  <desc id="desc">El circuito normalmente cerrado se abre al superar fallos y pasa a semiabierto tras el timeout para probar recuperación.</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#526d86"/></marker><style>text{font-family:Arial,sans-serif;fill:#213247}.title{font-size:28px;font-weight:700}.sub{font-size:15px;fill:#60758a}.node{stroke-width:2.5;rx:22}.lab{font-size:21px;font-weight:700}.body{font-size:15px}.small{font-size:13px;fill:#5c7184}.arrow{stroke:#526d86;stroke-width:3;fill:none;marker-end:url(#arrow)}.loop{stroke:#8a6ca6;stroke-width:2.5;fill:none;stroke-dasharray:8 6;marker-end:url(#arrow)}</style></defs>
+  <rect width="1100" height="540" fill="#fff"/><text x="50" y="55" class="title">Patrón Circuit Breaker: ciclo de estados</text><text x="50" y="83" class="sub">Representación del comportamiento simulado por el módulo del proyecto</text>
+  <rect x="75" y="200" width="240" height="130" class="node" fill="#eaf6ee" stroke="#33915d"/><text x="195" y="250" text-anchor="middle" class="lab">CERRADO</text><text x="195" y="281" text-anchor="middle" class="body">Las llamadas se procesan</text><text x="195" y="305" text-anchor="middle" class="small">Cuenta fallos consecutivos</text>
+  <rect x="430" y="200" width="240" height="130" class="node" fill="#fff0ed" stroke="#c6584f"/><text x="550" y="250" text-anchor="middle" class="lab">ABIERTO</text><text x="550" y="281" text-anchor="middle" class="body">Rechaza llamadas nuevas</text><text x="550" y="305" text-anchor="middle" class="small">Evita llamadas a dependencia fallida</text>
+  <rect x="785" y="200" width="240" height="130" class="node" fill="#fff7df" stroke="#c5912d"/><text x="905" y="250" text-anchor="middle" class="lab">SEMIABIERTO</text><text x="905" y="281" text-anchor="middle" class="body">Permite una llamada de prueba</text><text x="905" y="305" text-anchor="middle" class="small">Evalúa si el servicio se recuperó</text>
+  <path d="M315 235 H420" class="arrow"/><text x="367" y="218" text-anchor="middle" class="small">umbral de fallos</text>
+  <path d="M670 235 H775" class="arrow"/><text x="722" y="218" text-anchor="middle" class="small">vence el timeout</text>
+  <path d="M905 330 C905 420 195 420 195 340" class="arrow"/><text x="550" y="452" text-anchor="middle" class="body">Prueba exitosa → CERRADO</text>
+  <path d="M900 195 C820 120 650 120 570 190" class="loop"/><text x="735" y="130" text-anchor="middle" class="small">Prueba fallida → ABIERTO</text>
+  <text x="50" y="500" class="small">En el prototipo, fallos y latencias son simulados; no se consulta un servicio financiero real.</text>
+</svg>

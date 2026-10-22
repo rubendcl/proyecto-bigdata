@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="610" viewBox="0 0 1200 610" role="img" aria-labelledby="title desc">
+  <title id="title">Secuencia del simulacro de recuperación ante desastres</title>
+  <desc id="desc">El proceso registra datos, replica al standby, simula una falla, mide failover y restaura el estado tras la prueba.</desc>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#526d86"/></marker><style>text{font-family:Arial,sans-serif;fill:#203247}.title{font-size:27px;font-weight:700}.sub{font-size:15px;fill:#5c7185}.actor{fill:#eaf2fb;stroke:#4f7cac;stroke-width:2;rx:11}.actor2{fill:#edf7f0;stroke:#4d9567;stroke-width:2;rx:11}.actor3{fill:#f4eef9;stroke:#8660a8;stroke-width:2;rx:11}.lab{font-size:16px;font-weight:700}.body{font-size:14px}.small{font-size:12px;fill:#576d81}.line{stroke:#9aabba;stroke-width:2;stroke-dasharray:7 7}.msg{stroke:#526d86;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.back{stroke:#865a9d;stroke-width:2.5;fill:none;stroke-dasharray:8 5;marker-end:url(#arrow)}</style></defs>
+  <rect width="1200" height="610" fill="#fff"/><text x="48" y="50" class="title">Secuencia del simulacro DRP</text><text x="48" y="77" class="sub">Comportamiento del simulador local; sitios, sincronización y failover no son infraestructura real</text>
+  <rect x="90" y="115" width="220" height="64" class="actor"/><text x="200" y="154" text-anchor="middle" class="lab">Proceso DRP</text>
+  <rect x="490" y="115" width="220" height="64" class="actor2"/><text x="600" y="154" text-anchor="middle" class="lab">Sitio primario</text>
+  <rect x="890" y="115" width="220" height="64" class="actor3"/><text x="1000" y="154" text-anchor="middle" class="lab">Standby warm</text>
+  <path d="M200 179 V555" class="line"/><path d="M600 179 V555" class="line"/><path d="M1000 179 V555" class="line"/>
+  <path d="M200 220 H590" class="msg"/><text x="395" y="211" text-anchor="middle" class="body">1. Registrar lote (N registros)</text>
+  <path d="M600 270 H990" class="msg"/><text x="795" y="261" text-anchor="middle" class="body">2. Replicar registros pendientes</text>
+  <path d="M200 320 H590" class="msg"/><text x="395" y="311" text-anchor="middle" class="body">3. Simular fallo del primario</text>
+  <path d="M200 370 H990" class="msg"/><text x="595" y="361" text-anchor="middle" class="body">4. Activar standby y redirigir tráfico (simulado)</text>
+  <path d="M1000 420 H210" class="msg"/><text x="605" y="411" text-anchor="middle" class="body">5. Validar registros; medir RTO/RPO y brechas</text>
+  <path d="M200 480 H590" class="back"/><text x="395" y="471" text-anchor="middle" class="body">6. Restaurar el estado previo al simulacro</text>
+  <rect x="235" y="520" width="730" height="48" rx="10" fill="#fff7e7" stroke="#d6a34f" stroke-width="1.5"/><text x="600" y="550" text-anchor="middle" class="small">El reporte final vuelve al primario; el resultado interno conserva qué ocurrió durante el failover de prueba.</text>
+</svg>

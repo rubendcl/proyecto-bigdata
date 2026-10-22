@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Diseño de una arquitectura Big Data para el monitoreo de transacciones financieras</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    svg {
+      height: auto;
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      border: none;
+      border-top: 1px solid #1a1a1a;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<style>:root{color-scheme:light;--ink:#243247;--accent:#145b8c;--line:#d8e0e8}*{box-sizing:border-box}body{max-width:920px;margin:2rem auto;padding:2.5rem 3.5rem;color:var(--ink);background:#fff;font:16px/1.7 system-ui,-apple-system,Segoe UI,sans-serif;box-shadow:0 4px 24px #15283d12}h1,h2,h3{color:#183c5a;line-height:1.25}h1{border-bottom:2px solid var(--accent);padding-bottom:.5rem}h2{margin-top:2.2rem;border-bottom:1px solid var(--line);padding-bottom:.35rem}a{color:var(--accent)}img{display:block;max-width:100%;height:auto;margin:1rem auto;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;display:block;overflow-x:auto;margin:1rem 0}th,td{border:1px solid var(--line);padding:.55rem .7rem;text-align:left;vertical-align:top}th{background:#edf3f8}blockquote{border-left:4px solid var(--accent);margin-left:0;padding:.2rem 1rem;background:#f5f8fb}pre{overflow-x:auto;padding:1rem;background:#f2f5f8;border:1px solid var(--line);border-radius:5px}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}@media(max-width:700px){body{margin:0;padding:1.2rem;box-shadow:none}}@media print{body{max-width:none;margin:0;padding:0;box-shadow:none;font-size:11pt}a{color:inherit;text-decoration:none}img,table,pre{break-inside:avoid}h1,h2,h3{break-after:avoid}}</style></head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Diseño de una arquitectura Big Data para el monitoreo
+de transacciones financieras</h1>
+</header>
+<h1
+id="diseño-de-una-arquitectura-big-data-para-el-monitoreo-de-transacciones-financieras">Diseño
+de una arquitectura Big Data para el monitoreo de transacciones
+financieras</h1>
+<blockquote>
+<p><strong>Borrador académico en Markdown — versión para revisión, 22 de
+octubre de 2026</strong><br />
+Este documento es la fuente de contenido para preparar el informe final
+en Microsoft Word. Los campos entre corchetes deben completarse antes de
+entregar. La evidencia descrita procede de una aplicación didáctica
+local con datos sintéticos; no representa una plataforma financiera de
+producción.</p>
+</blockquote>
+<h2 id="portada">Portada</h2>
+<p><strong>Universidad Amazónica de Pando</strong><br />
+<strong>Maestría en Big Data y Analítica de Datos (V1 G1 2025 S28
+U49)</strong><br />
+<strong>Módulo 10:</strong> Diseño de Arquitecturas para Sistemas de Big
+Data</p>
+<h3
+id="diseño-de-una-arquitectura-big-data-para-el-monitoreo-de-transacciones-financieras-1">Diseño
+de una arquitectura Big Data para el monitoreo de transacciones
+financieras</h3>
+<p><strong>Informe aplicado</strong></p>
+<p><strong>Autor(es):</strong> [Nombre completo / integrantes del
+grupo]<br />
+<strong>Docente:</strong> MSc. Ing. Marcelo Fernando Condori
+Mendoza<br />
+<strong>Sede:</strong> Sucre<br />
+<strong>Lugar:</strong> [Ciudad, Bolivia]<br />
+<strong>Fecha:</strong> 22 de octubre de 2026</p>
+<hr />
+<h2 id="resumen">Resumen</h2>
+<p>Este trabajo documenta la ejecución, revisión y mejora de un proyecto
+académico que representa un sistema de monitoreo de transacciones
+financieras mediante componentes y conceptos de Big Data. La aplicación
+genera transacciones sintéticas y presenta cinco áreas: procesamiento
+por lotes y capas Bronze/Silver/Gold; comparación conceptual entre batch
+y streaming; tolerancia a fallos mediante Circuit Breaker; simulación de
+recuperación ante desastres; y estrategias de sharding y
+replicación.</p>
+<p>La versión local se ejecutó con Python 3.12.3 en Linux, dentro de un
+entorno virtual. Se instaló el conjunto base de dependencias, se ejecutó
+la demo completa, se abrió el dashboard Streamlit y se ejecutaron
+módulos individuales. La revisión inicial permitió detectar fallos y
+resultados inconsistentes. Se corrigió una latencia negativa en la
+simulación de replicación, se cambió la clave usada para distribuir
+transacciones entre shards y se modificó la replicación del simulador
+DRP para copiar todos los registros pendientes. También se reemplazó una
+llamada de fecha UTC obsoleta y se documentó la forma correcta de
+invocar el módulo DRP.</p>
+<p>En una corrida de sharding con 500 transacciones, la distribución
+inicial dejó un shard vacío; después del cambio, los tres shards
+recibieron 155, 169 y 176 registros, con un balance calculado de 88,1 %.
+En el simulacro DRP de 200 transacciones, la línea base reportó 100
+recuperadas y 100 posiblemente perdidas; tras la mejora se reportaron
+200 recuperadas, cero perdidas y cero brechas. El ETL de una corrida
+recibió 500 registros, conservó 499 en Silver y rechazó uno. Estas
+cifras son resultados de simulación local y pueden cambiar entre
+ejecuciones.</p>
+<p>El proyecto demuestra flujos didácticos, pero no ejecuta en esta
+evidencia un clúster real distribuido, almacenamiento Delta, replicación
+entre regiones ni servicios externos de monitoreo. El informe distingue
+por ello la arquitectura conceptual del comportamiento realmente
+ejecutado.</p>
+<p><strong>Palabras clave:</strong> Big Data, arquitectura Lambda, ETL,
+lakehouse, sharding, replicación, Circuit Breaker, DRP, RTO, RPO.</p>
+<h2 id="índice-propuesto-para-word">Índice propuesto para Word</h2>
+<p>Al maquetar en Word, generar el índice automáticamente a partir de
+los estilos de encabezado. El orden de este borrador es:</p>
+<ol type="1">
+<li>Introducción</li>
+<li>Objetivos</li>
+<li>Alcance y método de trabajo</li>
+<li>Marco teórico</li>
+<li>Descripción de la solución</li>
+<li>Implementación aplicada</li>
+<li>Mejoras y resultados comparativos</li>
+<li>Limitaciones</li>
+<li>Conclusiones</li>
+<li>Recomendaciones</li>
+<li>Referencias</li>
+<li>Anexos</li>
+</ol>
+<h2 id="1-introducción">1. Introducción</h2>
+<p>Las organizaciones que procesan pagos, transferencias y otras
+operaciones financieras necesitan registrar grandes cantidades de
+eventos y analizarlos con oportunidad. Además del volumen, importa la
+velocidad de llegada, la variedad de campos, la calidad de los datos y
+la utilidad de los resultados para la toma de decisiones. Un sistema de
+monitoreo puede combinar la conservación de eventos, la validación de
+registros, la generación de indicadores y mecanismos que eviten que un
+fallo temporal de un servicio se propague al resto de la aplicación.</p>
+<p>El proyecto objeto de este informe presenta ese escenario mediante
+datos sintéticos. Incluye un generador de transacciones, módulos Python
+para procesar lotes y simular componentes de resiliencia, una interfaz
+Streamlit, un DAG de Apache Airflow y una configuración Docker para
+servicios como Kafka, PostgreSQL y SeaweedFS. El objetivo de este
+trabajo no es afirmar que todos esos servicios se ejecutaron como una
+plataforma distribuida de producción, sino evaluar de forma reproducible
+los componentes disponibles en el entorno local y documentar sus
+resultados.</p>
+<p>La revisión se realizó en etapas. Primero se inspeccionó el código y
+el README; luego se preparó un entorno virtual, se ejecutó la demo y el
+dashboard, y se probaron los módulos individuales. Los resultados
+iniciales mostraron un fallo al comparar estrategias de replicación, una
+distribución hash con shard vacío y una discrepancia entre registros
+recuperados y perdidos en el simulacro DRP. Se implementaron
+correcciones puntuales y se repitieron las ejecuciones afectadas. La
+bitácora del proceso y las capturas organizadas se conservan en
+<code>docs/BITACORA_EJECUCION.md</code> y
+<code>docs/evidencias/</code>.</p>
+<p>El informe se estructura en objetivos, fundamentos, método,
+descripción aplicada, comparación de cambios, conclusiones y
+recomendaciones. En cada sección se diferencia entre conceptos
+respaldados por fuentes técnicas, comportamiento implementado en código
+y resultados observados en una corrida concreta.</p>
+<h2 id="2-objetivos">2. Objetivos</h2>
+<h3 id="21-objetivo-general">2.1 Objetivo general</h3>
+<p>Ejecutar, analizar y mejorar una aplicación didáctica de arquitectura
+Big Data para monitoreo de transacciones financieras sintéticas,
+documentando su funcionamiento, resultados, limitaciones y evidencias de
+ejecución.</p>
+<h3 id="22-objetivos-específicos">2.2 Objetivos específicos</h3>
+<ol type="1">
+<li>Describir los conceptos de arquitectura Lambda/Kappa, procesamiento
+batch y streaming, capas de datos, particionamiento, replicación,
+Circuit Breaker, observabilidad y recuperación ante desastres
+pertinentes al proyecto.</li>
+<li>Preparar el entorno Python local y ejecutar la demo, el dashboard y
+los módulos individuales documentados en el repositorio.</li>
+<li>Identificar fallos o discrepancias observables en las ejecuciones
+iniciales.</li>
+<li>Aplicar y verificar mejoras concretas en la simulación de latencia,
+distribución hash, sincronización DRP y generación de marcas temporales
+UTC.</li>
+<li>Reunir capturas auténticas y registrar los resultados y cambios para
+facilitar la reproducción y evaluación del trabajo.</li>
+</ol>
+<h2 id="3-alcance-y-método-de-trabajo">3. Alcance y método de
+trabajo</h2>
+<h3 id="31-alcance">3.1 Alcance</h3>
+<p>El análisis cubre la ruta de ejecución local en Python y las
+interfaces Streamlit observadas por el usuario. Comprende la demo de
+cinco bloques, el procesamiento ETL local en JSON, las simulaciones de
+resiliencia y el contenido de los módulos de ingesta, procesamiento,
+monitoreo y recuperación. También se revisaron las instrucciones de
+ejecución y las configuraciones Docker y Airflow para evitar atribuir
+capacidades no verificadas.</p>
+<p>No se levantó el stack Docker durante estas pruebas; la inspección
+inicial de Docker mostró cero imágenes, contenedores y volúmenes
+locales. No se ejecutó el DAG en Airflow ni se verificó conexión real a
+Kafka, PostgreSQL, SeaweedFS, Spark o Delta Lake. Las métricas de
+throughput, latencias y RTO/RPO se obtuvieron en un entorno local o
+dentro de simulaciones, por lo que no deben interpretarse como
+mediciones de capacidad de producción.</p>
+<h3 id="32-método">3.2 Método</h3>
+<p>El trabajo siguió una secuencia de observación y corrección:</p>
+<ol type="1">
+<li>Inspección de la estructura, el README, configuración y
+módulos.</li>
+<li>Preparación de Python 3.12.3 y del entorno virtual
+<code>.venv</code>.</li>
+<li>Instalación del conjunto base de dependencias indicado en el
+README.</li>
+<li>Ejecución inicial de la demo y los módulos; registro de errores,
+métricas y artefactos.</li>
+<li>Aplicación de cambios de alcance acotado a partir de fallos
+reproducibles o salidas incoherentes.</li>
+<li>Repetición manual de los comandos relevantes y comparación de la
+evidencia anterior y posterior.</li>
+<li>Registro de cambios mediante commits pequeños y documentación en
+Markdown.</li>
+</ol>
+<p>La evidencia de ejecución es manual y observacional. No se afirma que
+se haya ejecutado una suite de pruebas unitarias automatizada. Los
+números aleatorios usados por los simuladores hacen que diferentes
+corridas produzcan resultados distintos.</p>
+<h2 id="4-marco-teórico">4. Marco teórico</h2>
+<h3 id="41-big-data-y-las-dimensiones-de-los-datos">4.1 Big Data y las
+dimensiones de los datos</h3>
+<p>En este trabajo se usa el marco didáctico de las cinco V: volumen,
+velocidad, variedad, veracidad y valor. El simulador ejemplifica volumen
+al generar lotes, velocidad al producir eventos de forma continua,
+variedad mediante campos de transacción y metadatos semiestructurados,
+veracidad mediante indicadores de completitud y fraude potencial, y
+valor a través de agregaciones que pueden alimentar un análisis. Estas
+dimensiones se utilizan como una lente para describir el caso; la demo
+no constituye por sí sola una prueba de escala masiva ni de detección
+financiera real.</p>
+<h3 id="42-arquitecturas-lambda-y-kappa">4.2 Arquitecturas Lambda y
+Kappa</h3>
+<p>La arquitectura Lambda combina una ruta batch que procesa datos
+históricos con una ruta de baja latencia para los datos recientes y una
+capa de servicio que presenta resultados. La ruta batch puede recalcular
+vistas con el conjunto histórico, mientras que el flujo de velocidad
+reduce la demora de información reciente. La combinación introduce
+complejidad porque las transformaciones de ambas rutas pueden tener que
+mantenerse y conciliarse. La literatura sobre Lambda/Kappa resalta tanto
+ese propósito como los compromisos de complejidad y operación [1].</p>
+<p>En el repositorio, la arquitectura Lambda aparece como referencia
+conceptual. El pipeline ETL local sí escribe archivos JSON por capas, y
+el simulador tiene una función generadora continua. Kafka y Flink
+aparecen en documentación y componentes, pero las cifras de la tabla
+“Batch vs Streaming” de la demo son simuladas: no provienen de una
+medición contra clústeres Apache Spark, Kafka o Flink reales.</p>
+<h3 id="43-ingesta-batch-y-streaming">4.3 Ingesta, batch y
+streaming</h3>
+<p>El procesamiento batch trabaja sobre un conjunto finito de registros
+y resulta adecuado para agregaciones y reprocesamiento. El streaming
+procesa eventos conforme llegan y se usa cuando una respuesta reciente
+tiene valor. Kafka organiza eventos en topics y particiones; las claves
+permiten dirigir eventos relacionados a una misma partición y preservar
+el orden dentro de ella. La documentación de Kafka describe particiones
+y replicación a nivel de partición [2].</p>
+<p>El productor y consumidor Kafka forman parte del proyecto, pero la
+ejecución documentada en este informe no inició el broker Docker. La
+demo local utiliza el simulador y procesamiento en memoria/archivos, así
+que la comparación presentada es ilustrativa y no una evaluación de
+latencia de Kafka frente a Spark.</p>
+<h3 id="44-lakehouse-y-capas-bronze-silver-y-gold">4.4 Lakehouse y capas
+Bronze, Silver y Gold</h3>
+<p>El patrón medallion organiza datos en capas de calidad progresiva:
+Bronze conserva datos de origen, Silver contiene datos validados y
+transformados, y Gold reúne vistas agregadas para análisis. La
+documentación de Databricks describe estas capas como un patrón de
+diseño para mejorar gradualmente la estructura y calidad de los datos
+[3]. Delta Lake, por su parte, añade transacciones ACID, manejo de
+metadatos y compatibilidad con procesamiento batch y streaming sobre
+data lakes [4].</p>
+<p>En la prueba local, el código implementa la separación de archivos
+JSON en <code>datos/lakehouse/raw/</code>, <code>silver/</code> y
+<code>gold/</code>. El código de la demo instancia
+<code>MotorBatch(usar_spark=False)</code>; por tanto, esta ejecución usa
+la ruta local y no una tabla Delta ni un motor Spark distribuido. Los
+nombres de las capas describen la organización del flujo, no una
+implementación Delta activa.</p>
+<h3 id="45-particionamiento-y-balance-de-carga">4.5 Particionamiento y
+balance de carga</h3>
+<p>El sharding horizontal divide registros entre particiones con el
+objetivo de repartir almacenamiento o carga. Una clave de partición con
+suficiente cardinalidad y distribución adecuada ayuda a utilizar las
+particiones. El hash consistente dispone nodos sobre un anillo; se
+asigna una clave al siguiente nodo disponible en el anillo y las
+réplicas virtuales ayudan a refinar la distribución. Sin embargo, si se
+hashéan solo unas pocas claves repetidas, varios nodos pueden quedar sin
+registros.</p>
+<p>El proyecto mide un balance comparando el shard con menor número de
+registros con el de mayor número. Esta métrica es una heurística
+sencilla del código, no un indicador universal de capacidad o latencia.
+En esta aplicación, la mejora consistió en dar prioridad a
+<code>cliente_id</code>, en vez de volver a hashear el campo
+<code>shard_key</code> que ya contenía uno de pocos nombres de
+shard.</p>
+<h3 id="46-replicación-y-compromiso-cap">4.6 Replicación y compromiso
+CAP</h3>
+<p>La replicación síncrona espera confirmación de las réplicas activas
+antes de declarar completa la escritura; a cambio, aumenta la latencia
+observada. La replicación asíncrona confirma en el líder y propaga
+después, reduciendo la espera a costa de una ventana potencial de
+divergencia. La modalidad multi-líder acepta operaciones desde más de un
+líder y requiere tratar conflictos. Estas son estrategias con
+compromisos distintos; sus nombres en la aplicación describen modelos
+simulados.</p>
+<p>El teorema CAP trata los compromisos entre consistencia y
+disponibilidad cuando hay una partición de red; no significa simplemente
+que un sistema elige permanentemente dos de tres propiedades en todos
+los momentos. Gilbert y Lynch revisan su formalización y sus
+implicaciones prácticas [5]. El cuadro CAP de la demo se usa como apoyo
+docente y sus clasificaciones de estrategias deben leerse como
+simplificaciones, no como una garantía formal acerca de implementaciones
+reales.</p>
+<h3 id="47-circuit-breaker-y-tolerancia-a-fallos">4.7 Circuit Breaker y
+tolerancia a fallos</h3>
+<p>El patrón Circuit Breaker observa fallos en una operación protegida
+y, al superar un umbral, rechaza temporalmente nuevas llamadas para
+evitar agotar recursos o propagar una falla en cascada. Un estado
+semiabierto permite sondear la recuperación antes de cerrar el circuito.
+Fowler describe el patrón como un envoltorio que mide fallos, abre el
+circuito y devuelve error sin ejecutar la llamada protegida durante ese
+periodo [6]. La Figura 29 sintetiza el ciclo de estados que se ilustra
+en el módulo.</p>
+<p>El módulo local simula llamadas exitosas y fallidas, cuenta
+resultados y cambia entre estados. No prueba una dependencia bancaria
+real ni una recuperación de servicio externo. El carácter aleatorio de
+los fallos explica que contadores y secuencias varíen entre
+corridas.</p>
+<h3 id="48-observabilidad">4.8 Observabilidad</h3>
+<p>La observabilidad se apoya en señales que permiten entender el
+comportamiento de una aplicación. OpenTelemetry define métricas, logs y
+trazas como señales de telemetría y explica que las trazas muestran el
+recorrido de una petición, las métricas cuantifican medidas en tiempo de
+ejecución y los logs registran eventos [7].</p>
+<p>El módulo del proyecto implementa contadores, medidores, histogramas,
+trazas y reglas de alerta en memoria. Durante una corrida individual
+registró 94 mensajes, 6 errores y una tasa de error de 6,38 %, lo que
+disparó una alerta configurada sobre 5 %. No se verificó exportación a
+Prometheus, Grafana, Jaeger u OpenTelemetry Collector; esas
+integraciones son extensiones recomendables, no resultados
+realizados.</p>
+<h3 id="49-continuidad-y-recuperación-ante-desastres">4.9 Continuidad y
+recuperación ante desastres</h3>
+<p>Un plan de continuidad identifica procesos críticos, escenarios de
+interrupción y recursos de recuperación. NIST SP 800-34 presenta un
+enfoque para preparar planes de contingencia de sistemas de información
+y define, entre otros conceptos, RTO como el límite de indisponibilidad
+tolerable y RPO como el punto temporal al que los datos deben poder
+recuperarse [8]. RTO expresa una duración de recuperación; RPO expresa
+la pérdida temporal de datos admisible.</p>
+<p>El módulo DRP define procesos, sitios hot/warm/cold, replicación,
+failover, failback y simulacros. En el escenario probado, estos
+elementos y el redireccionamiento DNS/anycast son simulados dentro de un
+proceso Python; no hay centros de datos ni red multi-región activos. La
+secuencia de prueba y la restauración final del estado se representan en
+la Figura 28.</p>
+<h3 id="410-marcas-temporales-utc">4.10 Marcas temporales UTC</h3>
+<p>Las marcas temporales deben incluir una zona horaria cuando
+representan UTC, para evitar interpretar una fecha ingenua como hora
+local. La documentación oficial de Python 3.12 marca
+<code>datetime.utcnow()</code> como obsoleto y recomienda objetos con
+zona horaria como <code>datetime.now(timezone.utc)</code> [9]. Esta
+recomendación motivó una mejora pequeña en el pipeline Silver.</p>
+<h2 id="5-descripción-de-la-solución">5. Descripción de la solución</h2>
+<h3 id="51-componentes-revisados">5.1 Componentes revisados</h3>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Función declarada</th>
+<th>Comportamiento observado en este trabajo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>simulador_transacciones.py</code></td>
+<td>Crear eventos sintéticos</td>
+<td>Ejecutado; genera registros con identificadores, fechas UTC,
+cliente, región, moneda, canal y metadatos.</td>
+</tr>
+<tr>
+<td><code>motor_batch.py</code></td>
+<td>Flujo Bronze → Silver → Gold</td>
+<td>Ejecutado localmente con JSON; limpia, transforma, agrega y guarda
+KPIs.</td>
+</tr>
+<tr>
+<td><code>circuit_breaker.py</code></td>
+<td>Controlar fallos repetidos</td>
+<td>Ejecutado como simulación con estados y métricas.</td>
+</tr>
+<tr>
+<td><code>particionamiento.py</code></td>
+<td>Distribuir filas por estrategias</td>
+<td>Ejecutado con 3 shards hash y geográficos y con particionamiento
+vertical en memoria.</td>
+</tr>
+<tr>
+<td><code>replicacion.py</code></td>
+<td>Comparar escritura síncrona, asíncrona y multi-líder</td>
+<td>Ejecutado como simulación de nodos y latencia.</td>
+</tr>
+<tr>
+<td><code>plan_drp.py</code></td>
+<td>Simular contingencia y failover</td>
+<td>Ejecutado con <code>python -m</code>; sitios, sincronización y
+conmutación son simulados.</td>
+</tr>
+<tr>
+<td><code>observabilidad.py</code></td>
+<td>Registrar señales y alertas</td>
+<td>Ejecutado como simulación en memoria.</td>
+</tr>
+<tr>
+<td>Dashboard Streamlit</td>
+<td>Interactuar con ETL y simulaciones</td>
+<td>Abierto localmente; el usuario informó que funcionó con
+normalidad.</td>
+</tr>
+<tr>
+<td>DAG Airflow / Docker Compose</td>
+<td>Orquestación y servicios</td>
+<td>Revisados en archivos; no ejecutados en esta fase.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="52-flujo-lógico">5.2 Flujo lógico</h3>
+<p><img src="figuras/01-arquitectura-proyecto.svg"
+alt="Figura 1. Arquitectura observada del prototipo Big Data." /></p>
+<p><strong>Figura 1.</strong> Componentes ejecutados localmente y
+servicios configurados pero no levantados en las pruebas; las flechas no
+implican integración productiva.</p>
+<h3 id="53-entorno-de-ejecución">5.3 Entorno de ejecución</h3>
+<p>El entorno reportado fue Linux, Python 3.12.3 y un entorno virtual
+<code>.venv</code>. Se instaló el grupo base de dependencias desde pip,
+incluidos pandas, kafka-python, boto3, psycopg2-binary, SQLAlchemy,
+Streamlit, Plotly, python-dotenv, Pydantic, Tenacity, Rich, pytest y
+Faker. La instalación terminó con
+<code>Successfully installed</code>.</p>
+<p>La ejecución local de <code>python demo.py</code> no requirió Docker.
+La primera revisión del inventario Docker mostró que el equipo no tenía
+imágenes ni contenedores del proyecto en ejecución. No se debe confundir
+la disponibilidad de <code>docker-compose.yml</code> con la ejecución
+del stack.</p>
+<h2 id="6-implementación-aplicada">6. Implementación aplicada</h2>
+<h3 id="61-preparación-del-entorno">6.1 Preparación del entorno</h3>
+<p>Se siguió el procedimiento manual del README: crear un entorno
+virtual, activarlo e instalar dependencias base. Se ejecutó la demo
+desde ese entorno y luego se abrió el dashboard con
+<code>streamlit run dashboard/app_streamlit.py</code>. El dashboard
+estuvo accesible en <code>http://localhost:8501</code> según la captura
+de arranque.</p>
+<p><img src="evidencias/03-instalacion-dependencias.png"
+alt="Figura 2. Instalación de dependencias base." /></p>
+<p><strong>Figura 2.</strong> Instalación del entorno Python mostrada en
+terminal.</p>
+<p><img src="evidencias/11-dashboard-servidor-streamlit.png"
+alt="Figura 3. Inicio del servidor Streamlit." /></p>
+<p><strong>Figura 3.</strong> Arranque del dashboard Streamlit y URL
+local.</p>
+<h3 id="62-ejecución-integral-de-la-demo">6.2 Ejecución integral de la
+demo</h3>
+<p>La demo incluye cinco bloques y una síntesis final. Una ejecución
+completa desde <code>.venv</code> terminó en 4,73 segundos, de acuerdo
+con la salida compartida. Los resultados internos varían, por lo que el
+tiempo no constituye un benchmark y los porcentajes de fraude o métricas
+de rendimiento no son valores fijos.</p>
+<h4 id="bloque-1-datos-sintéticos-y-etl">Bloque 1: datos sintéticos y
+ETL</h4>
+<p>El generador creó transacciones con <code>id_transaccion</code>,
+<code>timestamp_utc</code>, región, identificador de cliente, tipo,
+monto, moneda, canal, indicadores de fraude y metadatos
+semiestructurados. El ETL local ejecutó tres pasos:</p>
+<ol type="1">
+<li><strong>Bronze:</strong> serializó el lote original a JSON.</li>
+<li><strong>Silver:</strong> descartó transacciones incompletas o con
+monto no positivo; estandarizó campos, convirtió montos a USD con tasas
+fijas ilustrativas y creó un hash corto del identificador de
+cliente.</li>
+<li><strong>Gold:</strong> calculó totales, montos promedio, mínimo y
+máximo, cantidad y tasa de fraude, medias de riesgo y agregados por
+región, tipo y categoría.</li>
+</ol>
+<p>En una ejecución de la demo con 300 registros, Silver/Gold reportó
+300 transacciones y un monto total de USD 850.491,00. En otra corrida
+compartida con el motor batch, de 500 entradas quedaron 497 válidas y 3
+rechazadas; después de la corrección UTC, una nueva corrida tuvo 500
+entradas, 499 válidas y 1 rechazada. Son lotes aleatorios
+independientes, no una discrepancia del mismo lote.</p>
+<p>La Figura 27 resume el recorrido de los datos por Bronze, Silver y
+Gold, incluida la salida de registros rechazados.</p>
+<p><img src="evidencias/04-demo-bloque1-inicio.png"
+alt="Figura 4. Demo: generación de transacciones y ETL." /></p>
+<p><strong>Figura 4.</strong> Datos sintéticos y resultado de las capas
+Bronze, Silver y Gold en la demo.</p>
+<p><img src="evidencias/12-dashboard-etl.png"
+alt="Figura 5. Dashboard ETL." /></p>
+<p><strong>Figura 5.</strong> Indicadores y presentación del pipeline
+ETL en el dashboard.</p>
+<h4 id="bloque-2-selección-de-tecnologías">Bloque 2: selección de
+tecnologías</h4>
+<p>La demo presenta una tabla conceptual de batch y streaming, y compara
+Data Lake, Data Warehouse y Lakehouse. Los rótulos Spark y Kafka/Flink
+son parte de una ilustración de latencia generada localmente; no se
+conectaron a motores reales para esa medición. En el informe final, debe
+presentarse como comparación didáctica y no como resultado de
+benchmark.</p>
+<h4 id="bloque-3-alta-disponibilidad-y-circuit-breaker">Bloque 3: alta
+disponibilidad y Circuit Breaker</h4>
+<p>La demo simula una dependencia inestable, registra llamadas, errores
+y rechazos cuando el circuito se encuentra abierto, espera un timeout y
+luego permite una llamada de prueba. En la ejecución individual
+reportada, el umbral fue de 3 fallos y el timeout de 5 segundos; hubo 15
+intentos, 1 éxito, 4 fallos registrados y 10 rechazos mientras el
+circuito estuvo abierto. La secuencia depende de la aleatoriedad.</p>
+<p>La misma área del proyecto genera métricas y trazas de
+observabilidad. En otra corrida del módulo de observabilidad hubo 6
+errores sobre 94 mensajes, tasa de 6,38 %, y se activó una alerta
+crítica con umbral del 5 %. Las cifras pertenecen a ejecuciones
+distintas y se citan para explicar funcionalidades, no para comparar
+tasa del sistema.</p>
+<p><img src="evidencias/06-demo-bloque3-circuit-breaker.png"
+alt="Figura 6. Transiciones del Circuit Breaker en la demo." /></p>
+<p><strong>Figura 6.</strong> Circuito y métricas de alta disponibilidad
+presentados en la demo.</p>
+<p><img src="evidencias/14-dashboard-circuit-breaker.png"
+alt="Figura 7. Dashboard del Circuit Breaker." /></p>
+<p><strong>Figura 7.</strong> Estado y últimas llamadas mostradas en el
+panel interactivo.</p>
+<h4 id="bloque-4-simulacro-drp">Bloque 4: simulacro DRP</h4>
+<p>El módulo registra datos en el sitio primario, inicia un hilo de
+replicación al standby y simula la caída del sitio primario. El failover
+simulado activa el sitio standby, espera 0,5 segundos, informa la
+redirección y calcula registros disponibles, RTO y RPO. El simulacro
+guarda y restaura el estado previo para que la aplicación de prueba no
+permanezca en failover después del ensayo.</p>
+<p>La primera corrida de 200 registros replicó solo los últimos 100, por
+lo que reportó 100 disponibles y 100 posiblemente perdidos. A la vez el
+RPO calculado por tiempo desde el último backup fue 0,03 min y se marcó
+cumplido frente al objetivo de 5 min. Este resultado mostró que el
+contador de registros omitidos y el cálculo temporal del RPO son
+dimensiones diferentes y que la inicialización de la réplica estaba
+incompleta.</p>
+<p>Después de cambiar el ciclo para copiar todos los registros
+pendientes, el ensayo compartido reportó 200 disponibles, 0 posiblemente
+perdidos, RTO de 0,01 min y RPO de 0,03 min. No hubo brechas. Al
+terminar, el estado general volvió a <code>region-a-activa</code>; el
+resultado del failover dentro del simulacro identificó
+<code>region-b-standby</code> como sitio activo durante la prueba. Las
+métricas se producen con esperas y reloj local, por lo que no
+representan objetivos SLA validados en infraestructura real.</p>
+<p><img src="evidencias/16-dashboard-drp-linea-base.png"
+alt="Figura 8. Dashboard DRP con brecha de línea base." /></p>
+<p><strong>Figura 8.</strong> Resultado inicial del simulacro mostrado
+en la interfaz.</p>
+<p><img src="evidencias/23-modulo-drp-linea-base.png"
+alt="Figura 9. Resultado DRP inicial." /></p>
+<p><strong>Figura 9.</strong> Línea base: 100 de 200 registros no
+estaban en standby.</p>
+<p><img src="evidencias/25-modulo-drp-mejorado.png"
+alt="Figura 10. Resultado DRP mejorado." /></p>
+<p><strong>Figura 10.</strong> Después del cambio: los 200 registros se
+encontraron en standby y no se reportaron brechas.</p>
+<h4 id="bloque-5-sharding-replicación-y-cap">Bloque 5: sharding,
+replicación y CAP</h4>
+<p>El módulo genera 600 transacciones, inserta lotes en la estrategia
+hash y geográfica, muestra una separación vertical por
+perfil/transacción/comercio/riesgo y compara estrategias de replicación.
+En la corrida inicial del usuario, el hash asignó 167 registros a
+<code>shard_0</code>, 333 a <code>shard_1</code> y ninguno a
+<code>shard_2</code>; el balance fue 0 % y se marcó hotspot. La causa
+fue el uso preferente de <code>shard_key</code>, con únicamente
+etiquetas <code>shard_0</code>–<code>shard_2</code>, como entrada a una
+segunda distribución por anillo.</p>
+<p>Después de priorizar <code>cliente_id</code>, una corrida de 500
+transacciones distribuyó 155, 169 y 176 registros entre los tres shards.
+La métrica de balance del módulo quedó en 88,1 % y no detectó hotspot.
+La comparación se representa en la Figura 30. Una corrida de 500 filas
+es ilustrativa; no demuestra por sí sola balance esperado en todas las
+cargas ni bajo distribuciones adversas.</p>
+<p><img src="evidencias/20-modulo-sharding-linea-base-y-replicacion.png"
+alt="Figura 11. Distribución hash de línea base." /></p>
+<p><strong>Figura 11.</strong> Línea base con el shard 2 sin
+registros.</p>
+<p><img src="evidencias/24-modulo-sharding-mejorado.png"
+alt="Figura 12. Distribución hash mejorada." /></p>
+<p><strong>Figura 12.</strong> Resultado posterior con uso de los tres
+shards y balance de 88,1 %.</p>
+<p>En una ejecución individual, la comparación de escrituras mostró
+aproximadamente 21,7 ms de latencia media síncrona, 1,5 ms asíncrona y
+5,3 ms multi-líder. Estas cifras proceden de sleeps y variaciones
+aleatorias, no de nodos de red reales. La principal utilidad de la tabla
+es hacer visible el compromiso pedagógico entre espera por
+confirmaciones y propagación posterior.</p>
+<h3 id="63-ejecución-de-módulos-individuales">6.3 Ejecución de módulos
+individuales</h3>
+<p>Se ejecutaron de forma independiente el simulador, el Circuit
+Breaker, el particionador, el simulador de replicación, el motor batch,
+la observabilidad y el DRP. El intento
+<code>python src/recuperacion/plan_drp.py</code> falló con
+<code>ModuleNotFoundError: No module named 'src'</code>, debido a la
+ruta de importación para ejecución directa. Ejecutarlo desde la raíz
+como <code>python -m src.recuperacion.plan_drp</code> resolvió la
+importación. Por este motivo se actualizó el README.</p>
+<p><img src="evidencias/21-modulo-etl-y-advertencia-utc.png"
+alt="Figura 13. Ejecución individual del ETL y KPIs." /></p>
+<p><strong>Figura 13.</strong> Ejecución individual del motor batch
+antes de corregir la marca temporal obsoleta.</p>
+<p><img src="evidencias/22-modulo-observabilidad-e-invocacion-drp.png"
+alt="Figura 14. Error de invocación y ejecución de observabilidad." /></p>
+<p><strong>Figura 14.</strong> Salida que permite distinguir el error de
+invocación directa del resultado del módulo de observabilidad.</p>
+<h3 id="64-captura-en-visual-studio-code">6.4 Captura en Visual Studio
+Code</h3>
+<p>Se recibió una captura auténtica de la terminal integrada de VS Code.
+En ella se observa un primer intento del motor batch que falló por
+<code>timezone</code> no importado y, después del ajuste, la ejecución
+que completó las tres capas. Esta evidencia documenta el proceso
+completo de corrección, incluido el error intermedio, y demuestra que el
+proyecto se ejecutó desde VS Code.</p>
+<p><img src="evidencias/26-etl-terminal-integrada-vscode.png"
+alt="Figura 15. ETL ejecutado en terminal integrada de VS Code." /></p>
+<p><strong>Figura 15.</strong> Captura en VS Code: error inicial durante
+la corrección y ejecución posterior exitosa del ETL, con 500 entradas,
+499 válidas y 1 rechazada.</p>
+<h3 id="65-pruebas-de-regresión">6.5 Pruebas de regresión</h3>
+<p>Para reducir el riesgo de reintroducir los defectos corregidos se
+incorporaron tres pruebas automatizadas. Estas comprueban que la
+latencia simulada no sea negativa, que una muestra de 500 clientes use
+los tres shards y que el DRP replique el lote inicial completo y solo
+los nuevos registros en las sincronizaciones posteriores.</p>
+<p>El usuario ejecutó
+<code>python -m pytest tests/test_mejoras_aplicadas.py -v</code> desde
+el entorno <code>.venv</code> de Python 3.12.3. La salida mostró tres
+casos aprobados en 0,16 segundos. La prueba DRP sustituye la espera
+simulada de sincronización por una función local para medir la lógica de
+copia sin introducir latencia artificial. Estos casos cubren escenarios
+concretos; no sustituyen pruebas de integración con Kafka, Docker ni un
+entorno distribuido.</p>
+<p><img src="evidencias/27-pruebas-regresion-vscode.png"
+alt="Figura 16. Pruebas de regresión ejecutadas en VS Code." /></p>
+<p><strong>Figura 16.</strong> Terminal integrada de VS Code: las tres
+pruebas de regresión pasaron en 0,16 segundos.</p>
+<h3 id="66-ejecuciones-recientes-en-visual-studio-code">6.6 Ejecuciones
+recientes en Visual Studio Code</h3>
+<p>Después de incorporar la extracción de la sincronización DRP y las
+pruebas de regresión, el usuario volvió a ejecutar
+<code>python demo.py</code> desde VS Code. La demo finalizó en 4,69
+segundos. En el bloque ETL de esa corrida ingresaron 300 registros y
+Gold presentó 294; en el simulacro se recuperaron 150 registros, no se
+reportaron pérdidas, y el hash distribuyó 600 registros en 183/211/206,
+con balance reportado de 86,7 % y sin hotspot. Las comparaciones de
+tecnología y resiliencia de la demo son ilustrativas; no se midieron
+motores ni centros de datos externos.</p>
+<p><img src="evidencias/28-demo-vscode-bloque1-2.png"
+alt="Figura 17. Demo VS Code: bloque 1 y selección de tecnologías." /></p>
+<p><strong>Figura 17.</strong> Datos sintéticos, escalado por lotes y
+ETL del bloque 1; comienza la comparación del bloque 2.</p>
+<p><img src="evidencias/29-demo-vscode-bloque2-3.png"
+alt="Figura 18. Demo VS Code: selección tecnológica y Circuit Breaker." /></p>
+<p><strong>Figura 18.</strong> Criterios de selección y secuencia de
+llamadas que lleva al Circuit Breaker a rechazar operaciones.</p>
+<p><img src="evidencias/30-demo-vscode-bloque3-4.png"
+alt="Figura 19. Demo VS Code: métricas, observabilidad y DRP." /></p>
+<p><strong>Figura 19.</strong> Métricas de disponibilidad y
+observabilidad; inicio de la sección de recuperación ante desastres.</p>
+<p><img src="evidencias/31-demo-vscode-bloque4-5.png"
+alt="Figura 20. Demo VS Code: failover y sharding." /></p>
+<p><strong>Figura 20.</strong> Simulacro DRP con 150 recuperados y cero
+registros perdidos; transición al bloque de particionamiento.</p>
+<p><img src="evidencias/32-demo-vscode-bloque5-sintesis.png"
+alt="Figura 21. Demo VS Code: sharding, replicación y CAP." /></p>
+<p><strong>Figura 21.</strong> Resultados de hash, replicación
+síncrona/asíncrona/multi-líder y explicación conceptual de CAP.</p>
+<p><img src="evidencias/33-demo-vscode-sintesis-final.png"
+alt="Figura 22. Demo VS Code: síntesis y cierre." /></p>
+<p><strong>Figura 22.</strong> Recomendaciones presentadas por la demo y
+duración total de 4,69 segundos.</p>
+<p>Además de la demo integral, el usuario ejecutó módulos individuales.
+En el sharding hash de una muestra de 500 registros se observaron 150,
+189 y 161 registros por shard, con balance de 79,4 % y sin hotspot. En
+otra corrida del DRP, 200 de 200 registros estaban disponibles en
+standby, con cero pérdidas; se informaron RTO de 0,01 min y RPO de 0,03
+min. El motor ETL procesó 500 entradas, conservó 494, rechazó 6 y
+calculó un throughput de 12.043 registros/s. La observabilidad procesó
+98 mensajes, registró 2 errores (2,04 %), 8 alertas de fraude y ninguna
+alerta activa. Son resultados de corridas separadas y, excepto la cifra
+de entrada configurada, pueden variar.</p>
+<p><img src="evidencias/34-sharding-vscode.png"
+alt="Figura 23. Particionamiento hash ejecutado en VS Code." /></p>
+<p><strong>Figura 23.</strong> Ejecución individual: tres shards
+poblados, balance de 79,4 % y ausencia de hotspot en la muestra.</p>
+<p><img src="evidencias/35-drp-vscode.png"
+alt="Figura 24. DRP ejecutado en VS Code." /></p>
+<p><strong>Figura 24.</strong> Simulacro individual con 200 registros
+recuperados, cero perdidos y objetivos temporales RTO/RPO cumplidos.</p>
+<p><img src="evidencias/36-etl-vscode.png"
+alt="Figura 25. ETL ejecutado en VS Code." /></p>
+<p><strong>Figura 25.</strong> Resultado individual Bronze/Silver/Gold
+con 500 entradas, 494 registros Silver y 6 rechazados.</p>
+<p><img src="evidencias/37-observabilidad-vscode.png"
+alt="Figura 26. Observabilidad ejecutada en VS Code." /></p>
+<p><strong>Figura 26.</strong> Métricas de 98 mensajes, dos errores,
+ocho alertas de fraude y cero alertas activas en esta corrida.</p>
+<h3 id="67-diagramas-explicativos">6.7 Diagramas explicativos</h3>
+<p>El esquema de la Figura 1 distingue el camino local que sí se ejecutó
+de los servicios Docker descritos en la configuración. La Figura 27
+amplía la transformación por capas, incluyendo la salida de registros
+rechazados. La Figura 28 muestra las etapas del simulacro DRP y que, al
+finalizar, el prototipo restaura el estado previo. La Figura 29 resume
+los estados del Circuit Breaker. La Figura 30 ofrece una comparación
+visual de la distribución hash de línea base y de la corrida posterior a
+la mejora. En todas las figuras, los elementos locales representan el
+comportamiento observado; no se atribuye operación a infraestructura que
+no se levantó.</p>
+<p><img src="figuras/02-flujo-etl.svg"
+alt="Figura 27. Flujo de datos del ETL local." /></p>
+<p><strong>Figura 27.</strong> Proceso Bronze → Silver → Gold con
+ramificación de registros rechazados.</p>
+<p><img src="figuras/03-secuencia-drp.svg"
+alt="Figura 28. Secuencia del simulacro DRP." /></p>
+<p><strong>Figura 28.</strong> Registro, sincronización, fallo,
+failover, validación y restauración del estado de la aplicación de
+prueba.</p>
+<p><img src="figuras/04-estados-circuit-breaker.svg"
+alt="Figura 29. Ciclo de estados del Circuit Breaker." /></p>
+<p><strong>Figura 29.</strong> Transiciones entre cerrado, abierto y
+semiabierto ante fallos, timeout y llamada de prueba.</p>
+<p><img src="figuras/05-comparacion-sharding.svg"
+alt="Figura 30. Comparación visual de la distribución hash." /></p>
+<p><strong>Figura 30.</strong> Distribución observada en dos corridas
+sintéticas de 500 registros; los valores son ilustrativos, no una
+garantía estadística.</p>
+<h2 id="7-mejoras-aplicadas-y-comparación">7. Mejoras aplicadas y
+comparación</h2>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;">N.º</th>
+<th>Archivo</th>
+<th>Hallazgo</th>
+<th>Cambio</th>
+<th>Evidencia de resultado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">1</td>
+<td><code>src/resiliencia/replicacion.py</code></td>
+<td>Una latencia base de 1 ms más ruido aleatorio de −2 a 2 ms podía
+producir un valor negativo y detener <code>time.sleep()</code>.</td>
+<td>Se limitó la latencia simulada con <code>max(0.0, ...)</code>.</td>
+<td>Bloque 5 y demo integral concluyeron después del cambio; la demo
+compartida terminó en 4,75 s y luego 4,73 s.</td>
+</tr>
+<tr>
+<td style="text-align: right;">2</td>
+<td><code>src/resiliencia/particionamiento.py</code></td>
+<td>Se volvía a hashear una clave con solo tres etiquetas, dejando un
+shard vacío.</td>
+<td>Se priorizó <code>cliente_id</code>, de mayor cardinalidad en los
+datos generados.</td>
+<td>En 500 registros: de 167/333/0 a 155/169/176; balance reportado 88,1
+%.</td>
+</tr>
+<tr>
+<td style="text-align: right;">3</td>
+<td><code>src/recuperacion/plan_drp.py</code></td>
+<td>El ciclo copiaba únicamente los últimos 100 registros al
+standby.</td>
+<td>Se copiaron los registros posteriores al conteo ya
+sincronizado.</td>
+<td>En una muestra de 200: de 100 recuperados/100 perdidos a 200/0 y
+cero brechas.</td>
+</tr>
+<tr>
+<td style="text-align: right;">4</td>
+<td><code>src/procesamiento/motor_batch.py</code> y
+<code>README.md</code></td>
+<td><code>datetime.utcnow()</code> generaba advertencia de
+obsolescencia; la instrucción directa del DRP no resolvía
+<code>src</code>.</td>
+<td>Se usó <code>datetime.now(timezone.utc)</code> y se cambió el
+comando del README a
+<code>python -m src.recuperacion.plan_drp</code>.</td>
+<td>El ETL completó en 0,047 s, sin advertencia, con 500 entradas y 499
+válidas.</td>
+</tr>
+<tr>
+<td style="text-align: right;">5</td>
+<td><code>src/recuperacion/plan_drp.py</code>,
+<code>tests/test_mejoras_aplicadas.py</code> y
+<code>README.md</code></td>
+<td>El repositorio documentaba comandos de pytest, pero no tenía una
+carpeta de pruebas; la sincronización DRP estaba integrada dentro del
+hilo y era difícil de comprobar aisladamente.</td>
+<td>Se extrajo <code>_replicar_pendientes()</code> y se añadieron
+pruebas de regresión para latencia no negativa, uso de los tres shards y
+sincronización DRP incremental sin duplicados. Se actualizó el comando
+de pytest del README.</td>
+<td>El usuario ejecutó
+<code>python -m pytest tests/test_mejoras_aplicadas.py -v</code>: 3
+pruebas pasaron en 0,16 s; la captura de VS Code quedó archivada como
+evidencia 27.</td>
+</tr>
+</tbody>
+</table>
+<p>Las mejoras de latencia, sharding y DRP se registraron en commits
+individuales; la modificación UTC y su documentación se guardaron en
+<code>cd58e10</code>. Las pruebas de regresión y la extracción del
+método DRP son cambios posteriores aún pendientes de commit. El usuario
+informó que las tres pruebas pasaron; para la evidencia visual y el
+cumplimiento estricto del requisito docente aún se deben guardar
+capturas adicionales de VS Code.</p>
+<h2 id="8-limitaciones">8. Limitaciones</h2>
+<ol type="1">
+<li><strong>Datos sintéticos:</strong> los registros no proceden de una
+entidad financiera ni contienen una detección validada de fraude. Los
+porcentajes y tasas son aleatorios.</li>
+<li><strong>Escala local:</strong> las muestras de cientos de registros
+no demuestran escalabilidad de Big Data. Los TPS y throughput dependen
+del equipo, del tamaño pequeño de la muestra y de la implementación
+local.</li>
+<li><strong>ETL local:</strong> el flujo observado utiliza JSON. PySpark
+está en dependencias y en configuración, pero no se usó en el camino
+ejecutado. No se escribió una tabla Delta en esta evidencia.</li>
+<li><strong>Servicios externos:</strong> Kafka, Airflow, PostgreSQL,
+SeaweedFS y el stack Docker no fueron levantados ni conectados en las
+ejecuciones documentadas.</li>
+<li><strong>Resiliencia simulada:</strong> latencia, nodos, réplicas,
+sitios, DNS, failover y resultados RTO/RPO se modelan en el proceso
+Python. No se midió una recuperación real de servicio o centro de
+datos.</li>
+<li><strong>Hash de cliente:</strong> la transformación local genera un
+hash SHA-256 truncado de 16 caracteres, sin sal configurada. Debe
+describirse como seudonimización demostrativa, no como anonimización
+robusta.</li>
+<li><strong>Métricas aleatorias:</strong> los resultados pueden variar
+entre corridas. Deben citarse junto al comando y el escenario de
+ejecución.</li>
+<li><strong>Capturas VS Code:</strong> el repositorio contiene 37
+imágenes; doce muestran explícitamente ejecuciones desde VS Code.
+Conviene añadir al menos tres capturas auténticas adicionales desde ese
+entorno, si la interpretación del docente exige que las 15 capturas sean
+de VS Code.</li>
+<li><strong>Advertencia Git:</strong> Git informó de objetos sueltos
+inalcanzables, pero no se encontraron commits inalcanzables; el
+historial del proyecto se mantuvo intacto y el árbol se reportó limpio
+después de los commits. Esta advertencia de mantenimiento no es un
+resultado funcional de la aplicación.</li>
+</ol>
+<h2 id="9-conclusiones">9. Conclusiones</h2>
+<ol type="1">
+<li>El repositorio permite observar en una sola aplicación didáctica
+conceptos de ingesta, ETL, capas de datos, tolerancia a fallos,
+sharding, replicación, observabilidad y recuperación ante
+desastres.</li>
+<li>La ejecución desde Python 3.12.3 y <code>.venv</code> permitió
+correr la demo, el dashboard y los módulos locales sin iniciar Docker.
+Esto facilitó revisar la lógica de simulación, pero no valida la
+operación de los servicios distribuidos anunciados en la arquitectura
+general.</li>
+<li>La corrección de la latencia negativa evitó que una variación
+aleatoria hiciera fallar la comparación de replicación y permitió
+completar la demo de cinco bloques.</li>
+<li>Priorizar una clave de mayor cardinalidad mejoró el resultado
+observado del sharding: los tres shards recibieron registros y la
+aplicación dejó de señalar un hotspot en esa muestra.</li>
+<li>La sincronización incremental de todos los registros pendientes
+eliminó la brecha observada en el escenario DRP de 200 transacciones. El
+simulacro también permitió distinguir el estado de failover durante la
+prueba del estado restaurado al concluirla.</li>
+<li>Reemplazar <code>datetime.utcnow()</code> eliminó la advertencia de
+obsolescencia en la corrida ETL, y actualizar la instrucción del README
+permitió ejecutar el DRP como módulo desde la raíz.</li>
+<li>Los resultados cuantitativos son útiles para describir el
+comportamiento del prototipo, pero no deben presentarse como SLA,
+benchmark de clúster ni garantía de disponibilidad de un sistema
+bancario real.</li>
+<li>Las tres pruebas de regresión ejecutadas pasaron en 0,16 s, lo que
+aporta una verificación repetible de la latencia simulada, la
+distribución hash y la replicación DRP incremental dentro de sus
+escenarios de prueba.</li>
+</ol>
+<h2 id="10-recomendaciones">10. Recomendaciones</h2>
+<ol type="1">
+<li>Completar al menos 15 capturas auténticas desde VS Code que muestren
+comandos, archivos relevantes y resultados de ejecución, y guardar sus
+nombres y pies de figura en el índice.</li>
+<li>Incorporar al informe la diferencia entre simulación y servicio
+real. Usar expresiones como “el simulador reportó” y “en esta corrida”,
+especialmente para latencia, RTO, RPO, fraude y balance.</li>
+<li>Evaluar una clave hash determinista de alta cardinalidad que combine
+cliente y región, documentar el algoritmo y medir muchas semillas y
+tamaños de lote; evitar interpretar una muestra de 500 como prueba
+general.</li>
+<li>En el DRP, registrar identificadores de registros sincronizados o un
+offset/checkpoint explícito, y calcular el punto de recuperación a
+partir del último registro recuperable. El conteo de registros perdidos
+y el RPO temporal deben ser coherentes y presentarse como medidas
+diferentes.</li>
+<li>Proteger credenciales mediante variables de entorno o un gestor de
+secretos. No empaquetar <code>.env</code> ni valores reales de
+contraseñas en el ZIP.</li>
+<li>Evitar afirmar anonimización fuerte para un hash sin sal; utilizar
+tokenización o HMAC con una clave protegida si el caso de uso lo
+requiriera.</li>
+<li>Separar una ruta de demo liviana de una instalación de stack
+completo y documentar qué comandos requieren Docker, Java, Spark o
+Airflow.</li>
+<li>Ampliar las pruebas automatizadas con escenarios de RPO y fallos de
+sincronización; mantener la ejecución de la suite antes de futuras
+modificaciones de resiliencia.</li>
+<li>Revisar el <code>docker-compose.yml</code> antes de presentar
+propiedades de alta disponibilidad: la configuración inspeccionada usa
+un broker Kafka y factor de replicación 1; sus comentarios no bastan
+para demostrar tolerancia a fallos.</li>
+<li>Para la entrega, crear el <code>.docx</code> con estilos de títulos,
+índice automático, pies de figura, numeración de páginas y al menos 14
+páginas; después revisar el documento exportado visualmente. Comprimir
+por separado el proyecto actualizado, excluyendo <code>.venv</code>,
+<code>.env</code>, cachés y archivos temporales.</li>
+</ol>
+<h2 id="11-referencias">11. Referencias</h2>
+<p>[1] Lin, J. (2017). The Lambda and the Kappa. <em>IEEE Internet
+Computing, 21</em>(5), 60–66. <a
+href="https://cs.uwaterloo.ca/~jimmylin/publications/Lin_IEEE2017b.pdf">https://cs.uwaterloo.ca/~jimmylin/publications/Lin_IEEE2017b.pdf</a></p>
+<p>[2] Apache Software Foundation. (s. f.). <em>Apache Kafka
+documentation: Introduction and design</em>. <a
+href="https://kafka.apache.org/documentation/">https://kafka.apache.org/documentation/</a></p>
+<p>[3] Databricks. (2026, 11 de septiembre). <em>What is the medallion
+lakehouse architecture?</em> <a
+href="https://docs.databricks.com/gcp/en/lakehouse/medallion">https://docs.databricks.com/gcp/en/lakehouse/medallion</a></p>
+<p>[4] Delta Lake. (s. f.). <em>Delta Lake documentation</em>. <a
+href="https://docs.delta.io/">https://docs.delta.io/</a></p>
+<p>[5] Gilbert, S., &amp; Lynch, N. A. (2012). Perspectives on the CAP
+Theorem. <em>Computer, 45</em>(2), 30–36. <a
+href="https://doi.org/10.1109/MC.2011.389">https://doi.org/10.1109/MC.2011.389</a></p>
+<p>[6] Fowler, M. (2014, 6 de marzo). <em>Circuit Breaker</em>. <a
+href="https://martinfowler.com/bliki/CircuitBreaker.html">https://martinfowler.com/bliki/CircuitBreaker.html</a></p>
+<p>[7] OpenTelemetry. (s. f.). <em>Signals</em>. <a
+href="https://opentelemetry.io/docs/concepts/signals/">https://opentelemetry.io/docs/concepts/signals/</a></p>
+<p>[8] Swanson, M., Bowen, P., Phillips, A., Gallup, D., &amp; Lynes, D.
+(2010). <em>Contingency Planning Guide for Federal Information
+Systems</em> (NIST SP 800-34 Rev. 1). National Institute of Standards
+and Technology. <a
+href="https://doi.org/10.6028/NIST.SP.800-34r1">https://doi.org/10.6028/NIST.SP.800-34r1</a></p>
+<p>[9] Python Software Foundation. (2026). <em>datetime — Basic date and
+time types</em>. Python 3 documentation. <a
+href="https://docs.python.org/3/library/datetime.html">https://docs.python.org/3/library/datetime.html</a></p>
+<p>[10] Apache Software Foundation. (2024). <em>DAGs — Apache Airflow
+2.10.4 documentation</em>. <a
+href="https://airflow.apache.org/docs/apache-airflow/2.10.4/core-concepts/dags.html">https://airflow.apache.org/docs/apache-airflow/2.10.4/core-concepts/dags.html</a></p>
+<h2 id="12-anexos">12. Anexos</h2>
+<h3 id="anexo-a-comandos-locales-documentados">Anexo A. Comandos locales
+documentados</h3>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Activar entorno</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">source</span> .venv/bin/activate</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar demo completa o un bloque</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> demo.py</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> demo.py <span class="at">--bloque</span> 1</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> demo.py <span class="at">--bloque</span> 5</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Abrir dashboard</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="ex">streamlit</span> run dashboard/app_streamlit.py</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Ejecutar módulos individuales desde la raíz</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/ingesta/simulador_transacciones.py</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/resiliencia/circuit_breaker.py</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/resiliencia/particionamiento.py</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/resiliencia/replicacion.py</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/procesamiento/motor_batch.py</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> src.recuperacion.plan_drp</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> src/monitoreo/observabilidad.py</span></code></pre></div>
+<h3 id="anexo-b-capturas-candidatas">Anexo B. Capturas candidatas</h3>
+<p>El catálogo con 37 capturas, su descripción y notas de línea
+base/posterior se encuentra en <a
+href="evidencias/INDICE_EVIDENCIAS.md"><code>evidencias/INDICE_EVIDENCIAS.md</code></a>.
+Para el Word, seleccionar figuras variadas y legibles, mantener las
+capturas originales y añadir pies que indiquen el comando y el hallazgo
+que se observa.</p>
+<h3 id="anexo-c-pendientes-antes-de-convertir-a-word">Anexo C.
+Pendientes antes de convertir a Word</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Completar institución, autoría o
+integrantes y ciudad.</label></li>
+<li><label><input type="checkbox" />Añadir al menos 3 capturas
+adicionales de ejecución en VS Code si se requiere que las 15 sean
+explícitamente de ese entorno.</label></li>
+<li><label><input type="checkbox" />Revisar que la corrida escogida para
+cada cifra coincide con la captura citada.</label></li>
+<li><label><input type="checkbox" />Dar formato APA 7 o el estilo
+requerido por el docente y comprobar los datos
+bibliográficos.</label></li>
+<li><label><input type="checkbox" />Generar índice automático, numerar
+figuras y verificar que el <code>.docx</code> final tenga 14 páginas o
+más.</label></li>
+<li><label><input type="checkbox" />Incluir conclusiones y
+recomendaciones revisadas por el grupo.</label></li>
+<li><label><input type="checkbox" />Comprimir el proyecto final sin
+<code>.env</code>, <code>.venv</code>, cachés ni salidas temporales de
+ejecución.</label></li>
+</ul>
+</body>
+</html>

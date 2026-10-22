@@ -429,8 +429,8 @@ pytest tests/ -v
 # Test con cobertura
 pytest tests/ --cov=src --cov-report=html
 
-# Test de un módulo específico
-pytest tests/test_circuit_breaker.py -v
+# Pruebas de regresión de las mejoras documentadas
+pytest tests/test_mejoras_aplicadas.py -v
 ```
 
 ---

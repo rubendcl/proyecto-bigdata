@@ -181,6 +181,17 @@ class PlanDRP:
         logger.info("✅ Plan DRP iniciado. Sistema OPERATIVO en sitio primario.")
 
     # ── Replicación continua ───────────────────────────────────────────────────
+    def _replicar_pendientes(self) -> int:
+        """Sincroniza los registros pendientes y devuelve cuántos copió."""
+        registros_confirmados = len(self.sitio_standby.datos_sincronizados)
+        datos_nuevos = self._datos_primario[registros_confirmados:]
+        if not datos_nuevos:
+            return 0
+
+        self.sitio_standby.sincronizar(datos_nuevos)
+        self._timestamp_ultimo_backup = time.time()
+        return len(datos_nuevos)
+
     def iniciar_replicacion(self) -> None:
         """Inicia la replicación continua en segundo plano (RPO continuo)."""
         self._replicacion_activa = True
@@ -191,11 +202,7 @@ class PlanDRP:
                 # Replicar desde el último registro confirmado en standby.
                 # Copiar solo los últimos 100 puede omitir registros antiguos
                 # durante la sincronización inicial y reportarlos como perdidos.
-                registros_confirmados = len(self.sitio_standby.datos_sincronizados)
-                datos_nuevos = self._datos_primario[registros_confirmados:]
-                if datos_nuevos:
-                    self.sitio_standby.sincronizar(datos_nuevos)
-                    self._timestamp_ultimo_backup = time.time()
+                self._replicar_pendientes()
 
                 time.sleep(cfg.recuperacion.intervalo_backup_segundos / 10)  # Simulación acelerada
 

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700" role="img" aria-labelledby="title desc">
+  <title id="title">Arquitectura del prototipo académico Big Data</title>
+  <desc id="desc">Arquitectura local ejecutada y servicios configurados pero no levantados durante las pruebas.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#52708d"/></marker>
+    <style>
+      text{font-family:Arial,sans-serif;fill:#1d2d3e}.title{font-size:28px;font-weight:700}.subtitle{font-size:16px;fill:#52677b}.label{font-size:15px;font-weight:700}.small{font-size:13px}.box{stroke-width:2;rx:13}.executed{fill:#e8f5ee;stroke:#2a855a}.configured{fill:#f5f7fa;stroke:#8898a9;stroke-dasharray:8 6}.connector{fill:none;stroke:#52708d;stroke-width:2.5;marker-end:url(#arrow)}.muted{fill:#65788c}
+    </style>
+  </defs>
+  <rect width="1200" height="700" fill="#fff"/>
+  <text x="54" y="54" class="title">Arquitectura del prototipo de monitoreo de transacciones</text>
+  <text x="54" y="82" class="subtitle">Ejecución local observada y servicios previstos/configurados en el repositorio</text>
+
+  <rect x="55" y="132" width="245" height="100" class="box executed"/>
+  <text x="177" y="170" text-anchor="middle" class="label">Generador sintético</text>
+  <text x="177" y="197" text-anchor="middle" class="small">simulador_transacciones.py</text>
+
+  <rect x="368" y="132" width="270" height="100" class="box executed"/>
+  <text x="503" y="170" text-anchor="middle" class="label">Pipeline ETL local</text>
+  <text x="503" y="197" text-anchor="middle" class="small">Python + JSON · Bronze/Silver/Gold</text>
+
+  <rect x="708" y="132" width="210" height="100" class="box executed"/>
+  <text x="813" y="170" text-anchor="middle" class="label">Dashboard</text>
+  <text x="813" y="197" text-anchor="middle" class="small">Streamlit · ejecución local</text>
+
+  <rect x="988" y="132" width="165" height="100" class="box configured"/>
+  <text x="1070" y="170" text-anchor="middle" class="label">Airflow DAG</text>
+  <text x="1070" y="197" text-anchor="middle" class="small">configurado · no ejecutado</text>
+
+  <path d="M300 182 H360" class="connector"/><path d="M638 182 H700" class="connector"/>
+  <path d="M638 155 C790 95 900 95 980 155" class="connector"/>
+
+  <rect x="55" y="310" width="510" height="150" class="box executed"/>
+  <text x="310" y="347" text-anchor="middle" class="label">Simulaciones ejecutadas</text>
+  <text x="90" y="383" class="small">• Circuit Breaker y observabilidad</text>
+  <text x="90" y="410" class="small">• Sharding y replicación simulada</text>
+  <text x="90" y="437" class="small">• DRP: failover, RTO/RPO simulados</text>
+
+  <rect x="625" y="310" width="528" height="150" class="box configured"/>
+  <text x="889" y="347" text-anchor="middle" class="label">Servicios configurados, no levantados</text>
+  <text x="670" y="383" class="small">Kafka · PostgreSQL · SeaweedFS/S3</text>
+  <text x="670" y="410" class="small">Docker Compose · conexiones externas</text>
+  <text x="670" y="437" class="small">No participaron en las corridas documentadas</text>
+
+  <path d="M500 232 C500 270 340 270 310 300" class="connector"/>
+  <path d="M177 232 C177 270 160 270 160 300" class="connector"/>
+
+  <rect x="55" y="535" width="22" height="22" rx="5" fill="#e8f5ee" stroke="#2a855a" stroke-width="2"/>
+  <text x="88" y="552" class="small">Componente ejecutado en el entorno local</text>
+  <rect x="490" y="535" width="22" height="22" rx="5" fill="#f5f7fa" stroke="#8898a9" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="523" y="552" class="small">Configurado o descrito; no ejecutado en estas pruebas</text>
+  <text x="55" y="625" class="small muted">El diagrama refleja el alcance observado; no representa un despliegue productivo ni una arquitectura multi-región activa.</text>
+</svg>

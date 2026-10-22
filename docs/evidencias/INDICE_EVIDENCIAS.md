@@ -1,6 +1,6 @@
 # Índice de evidencias
 
-Se copiaron aquí 26 capturas desde `docs/capturas_originales/`. Los archivos originales permanecen sin cambios. Las capturas son evidencia de las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
+Se copiaron aquí 37 capturas desde `docs/capturas_originales/`. Los archivos originales permanecen sin cambios. Las capturas son evidencia de las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
 
 | N.º | Archivo | Qué documenta |
 |---:|---|---|
@@ -30,13 +30,27 @@ Se copiaron aquí 26 capturas desde `docs/capturas_originales/`. Los archivos or
 | 24 | `24-modulo-sharding-mejorado.png` | Resultado posterior: tres shards poblados, balance 88,1 %, sin hotspot. |
 | 25 | `25-modulo-drp-mejorado.png` | Resultado posterior: 200 registros recuperados, cero perdidos y cero brechas. |
 | 26 | `26-etl-terminal-integrada-vscode.png` | Terminal integrada de VS Code: primer intento con `NameError` por el import de `timezone` y ejecución posterior exitosa del ETL con 500 entradas, 499 válidas y 1 rechazada. |
+| 27 | `27-pruebas-regresion-vscode.png` | Terminal integrada de VS Code: ejecución de `python -m pytest tests/test_mejoras_aplicadas.py -v`; 3 pruebas pasaron en 0,16 s. |
+| 28 | `28-demo-vscode-bloque1-2.png` | Demo completa en VS Code: transacción sintética, escalado por lotes, ETL Bronze/Silver/Gold y comienzo de selección de tecnologías. |
+| 29 | `29-demo-vscode-bloque2-3.png` | Demo completa en VS Code: criterios TCO y ejecución de llamadas del Circuit Breaker. |
+| 30 | `30-demo-vscode-bloque3-4.png` | Demo completa en VS Code: métricas de Circuit Breaker, observabilidad y comienzo del bloque DRP. |
+| 31 | `31-demo-vscode-bloque4-5.png` | Demo completa en VS Code: simulacro DRP con 150 registros recuperados, ninguno perdido, y comienzo de sharding. |
+| 32 | `32-demo-vscode-bloque5-sintesis.png` | Demo completa en VS Code: particionamiento, estrategias de replicación, CAP y comienzo de síntesis. |
+| 33 | `33-demo-vscode-sintesis-final.png` | Demo completa en VS Code: recomendaciones de arquitectura y tiempo total de 4,69 s. |
+| 34 | `34-sharding-vscode.png` | Ejecución individual en VS Code: 500 registros distribuidos en 150/189/161; balance hash de 79,4 % y sin hotspot. |
+| 35 | `35-drp-vscode.png` | Ejecución individual del DRP en VS Code: 200 registros recuperados, cero perdidos, RTO 0,01 min y RPO 0,03 min. |
+| 36 | `36-etl-vscode.png` | Ejecución individual del ETL en VS Code: 500 entradas, 494 válidas, 6 rechazadas, throughput de 12.043 registros/s y KPIs Gold. |
+| 37 | `37-observabilidad-vscode.png` | Ejecución individual de observabilidad en VS Code: 98 mensajes, 2 errores (2,04 %), 8 alertas de fraude y cero alertas activas. |
 
 ## Cómo usarlas en el informe
 
 - Las capturas 8, 15, 16, 20 y 23 son resultados de línea base, anteriores a las mejoras de sharding y DRP.
 - Las capturas 24 y 25 muestran las ejecuciones posteriores a las mejoras correspondientes.
 - La captura 26 muestra Visual Studio Code y su terminal integrada, además del intento fallido durante la corrección y la ejecución exitosa posterior.
+- La captura 27 muestra la suite de regresión ejecutada desde VS Code; los tres casos pasaron en 0,16 s.
+- Las capturas 28–33 son fragmentos consecutivos de una misma ejecución de `python demo.py`, no seis ejecuciones diferentes.
+- Las capturas 34–37 muestran ejecuciones individuales de particionamiento, DRP, ETL y observabilidad. Las métricas dependen de datos sintéticos y de cada corrida.
 - Las capturas 4 a 10 son fragmentos consecutivos de una misma ejecución de demo, no siete ejecuciones distintas.
 - Numerar las figuras del informe según el orden en que se citen; no es necesario insertar las 25 si algunas resultan repetitivas, pero conservar al menos 15 capturas pertinentes.
 - Añadir pies de figura que expliquen qué comando, sección o resultado se observa. No recortar ni retocar las capturas para alterar su contenido.
-- Aunque ya existe una captura explícita de VS Code, confirmar que al menos 15 figuras del informe sean capturas de ejecución en VS Code, según la interpretación literal de la consigna; varias evidencias de línea base son de terminal Linux y las del dashboard son del navegador.
+- Doce capturas explícitas corresponden a ejecución en VS Code (26–37). Confirmar que al menos 15 figuras del informe sean capturas únicas de ejecución en VS Code, según la interpretación literal de la consigna; por ahora faltan 3 capturas adicionales para llegar a esa meta.
