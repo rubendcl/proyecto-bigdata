@@ -188,8 +188,11 @@ class PlanDRP:
         def _ciclo_replicacion():
             logger.info("🔄 Replicación continua iniciada.")
             while self._replicacion_activa:
-                # Replicar datos nuevos desde el primario a standby
-                datos_nuevos = self._datos_primario[-100:]  # Últimos 100 registros
+                # Replicar desde el último registro confirmado en standby.
+                # Copiar solo los últimos 100 puede omitir registros antiguos
+                # durante la sincronización inicial y reportarlos como perdidos.
+                registros_confirmados = len(self.sitio_standby.datos_sincronizados)
+                datos_nuevos = self._datos_primario[registros_confirmados:]
                 if datos_nuevos:
                     self.sitio_standby.sincronizar(datos_nuevos)
                     self._timestamp_ultimo_backup = time.time()
