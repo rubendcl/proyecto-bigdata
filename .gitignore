@@ -1,0 +1,19 @@
+# Configuración local y credenciales
+.env
+.env.*
+!.env.example
+
+# Entorno y cachés Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Artefactos locales generados durante las ejecuciones
+datos/muestra_transacciones.json
+datos/lakehouse/raw/transacciones_*.json
+datos/lakehouse/silver/transacciones_limpio_*.json
+datos/lakehouse/gold/kpis_*.json
+
+# Registros locales
+logs/
