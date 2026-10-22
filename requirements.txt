@@ -1,0 +1,82 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# requirements.txt
+# Dependencias del proyecto BigData — Arquitecturas Robustas
+# Proyecto: Diseño de Arquitecturas para Sistemas de Big Data
+# Docente:  MSc. Ing. Marcelo Fernando Condori Mendoza
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── Núcleo de datos ───────────────────────────────────────────────────────────
+pandas==2.2.2
+numpy==1.26.4
+pyarrow==16.1.0             # Formato columnar para Data Lake / Parquet
+
+# ── Apache Kafka — Capa de velocidad (Streaming) ──────────────────────────────
+kafka-python==2.0.2         # Productor y consumidor Kafka
+confluent-kafka==2.4.0      # Cliente Confluent (alternativa de alto rendimiento)
+
+# ── Apache Spark (PySpark) — Procesamiento Batch y Streaming ─────────────────
+pyspark==3.5.1
+delta-spark==3.2.0          # Formato Delta Lake para Lakehouse
+
+# ── Almacenamiento — Data Lake (SeaweedFS / S3) ───────────────────────────────────
+boto3==1.34.131             # Cliente AWS S3 (compatible con SeaweedFS)
+
+# ── Data Warehouse — PostgreSQL ───────────────────────────────────────────────
+psycopg2-binary==2.9.9      # Driver PostgreSQL
+sqlalchemy==2.0.30          # ORM / SQL toolkit
+alembic==1.13.1             # Migraciones de esquema
+
+# ── Orquestación — Apache Airflow ─────────────────────────────────────────────
+# (Airflow se instala por separado con extras específicos)
+# Para instalación completa: pip install apache-airflow[postgres,kafka]==2.9.3
+apache-airflow==2.9.3
+
+# ── Dashboard — Streamlit ─────────────────────────────────────────────────────
+streamlit==1.36.0
+plotly==5.22.0              # Gráficos interactivos
+altair==5.3.0               # Gráficos declarativos
+
+# ── Gobernanza y transformación de datos ──────────────────────────────────────
+dbt-core==1.8.3             # Transformaciones SQL gobernadas
+dbt-postgres==1.8.2         # Adaptador PostgreSQL para dbt
+
+# ── Utilidades ────────────────────────────────────────────────────────────────
+python-dotenv==1.0.1        # Carga de variables de entorno
+pydantic==2.7.4             # Validación de datos con tipado
+loguru==0.7.2               # Logging enriquecido
+tenacity==8.3.0             # Reintentos con backoff exponencial
+rich==13.7.1                # Salida en consola con formato
+click==8.1.7                # CLI para scripts de administración
+httpx==0.27.0               # Cliente HTTP asíncrono (para APIs)
+aiohttp==3.9.5              # HTTP asíncrono
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest==8.2.2
+pytest-asyncio==0.23.7
+pytest-cov==5.0.0
+faker==25.9.1               # Datos sintéticos para pruebas
+
+# ── Análisis exploratorio (opcional) ─────────────────────────────────────────
+jupyter==1.0.0
+ipykernel==6.29.4
+matplotlib==3.9.0
+seaborn==0.13.2
+
+# ══════════════════════════════════════════════════════════════════════════════
+# NOTAS DE INSTALACIÓN:
+#
+# Instalación básica (sin Spark ni Airflow):
+#   pip install pandas kafka-python boto3 psycopg2-binary sqlalchemy \
+#               streamlit plotly python-dotenv pydantic tenacity rich
+#
+# Instalación completa:
+#   pip install -r requirements.txt
+#
+# Airflow con extras:
+#   pip install "apache-airflow[postgres,kafka,celery]==2.9.3" \
+#     --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.9.3/constraints-3.11.txt"
+#
+# PySpark requiere Java 11+:
+#   sudo apt-get install openjdk-11-jdk  # Ubuntu/Debian
+#   brew install openjdk@11              # macOS
+# ══════════════════════════════════════════════════════════════════════════════

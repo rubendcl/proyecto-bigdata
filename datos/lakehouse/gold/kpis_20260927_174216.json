@@ -1,0 +1,73 @@
+{
+  "kpis_globales": {
+    "total_transacciones": 297,
+    "monto_total_usd": 593876.87,
+    "monto_promedio_usd": 1999.59,
+    "monto_max_usd": 12078.99,
+    "monto_min_usd": 14.6,
+    "total_fraudes": 3,
+    "tasa_fraude_pct": 1.01,
+    "score_riesgo_promedio": 0.1542
+  },
+  "por_region": {
+    "este": {
+      "total_transacciones": 59,
+      "monto_total_usd": 121840.65,
+      "fraudes": 1,
+      "tasa_fraude_pct": 1.69
+    },
+    "norte": {
+      "total_transacciones": 58,
+      "monto_total_usd": 138566.52,
+      "fraudes": 0,
+      "tasa_fraude_pct": 0.0
+    },
+    "centro": {
+      "total_transacciones": 52,
+      "monto_total_usd": 103138.57,
+      "fraudes": 0,
+      "tasa_fraude_pct": 0.0
+    },
+    "sur": {
+      "total_transacciones": 70,
+      "monto_total_usd": 121226.16,
+      "fraudes": 1,
+      "tasa_fraude_pct": 1.43
+    },
+    "oeste": {
+      "total_transacciones": 58,
+      "monto_total_usd": 109104.97,
+      "fraudes": 1,
+      "tasa_fraude_pct": 1.72
+    }
+  },
+  "por_tipo_transaccion": {
+    "PAGO_SERVICIO": {
+      "total": 49,
+      "monto_total_usd": 97163.37
+    },
+    "RETIRO": {
+      "total": 65,
+      "monto_total_usd": 136680.86
+    },
+    "DEPOSITO": {
+      "total": 70,
+      "monto_total_usd": 140608.73
+    },
+    "COMPRA": {
+      "total": 57,
+      "monto_total_usd": 106453.68
+    },
+    "TRANSFERENCIA": {
+      "total": 56,
+      "monto_total_usd": 112970.23
+    }
+  },
+  "top_categorias": {
+    "COMBUSTIBLE": 45,
+    "TECNOLOGIA": 42,
+    "SUPERMERCADO": 39,
+    "RESTAURANTE": 38,
+    "SALUD": 37
+  }
+}
