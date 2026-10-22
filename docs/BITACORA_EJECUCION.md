@@ -72,7 +72,7 @@ Documento de trabajo para preparar el informe académico en formato Word. Regist
 - La medición hash obtenida tras la mejora fue buena en una muestra de 500, pero debe describirse como resultado de una ejecución simulada, no como garantía estadística universal.
 - El RPO del DRP se calcula como tiempo desde la última sincronización. La cantidad de registros perdidos se reporta aparte; no son métricas idénticas.
 - El pipeline local usa archivos JSON y la resiliencia/DRP/observabilidad son simulaciones. Evitar afirmar que hubo despliegue real multi-región, failover de DNS, clúster redundante o monitoreo productivo.
-- Se copiaron 37 capturas originales a `docs/evidencias/`, superando el mínimo cuantitativo general de 15. Doce capturas muestran expresamente ejecuciones desde VS Code; todavía hacen falta 3 capturas únicas de ese entorno para llegar a 15.
+- Se copiaron 37 capturas originales a `docs/evidencias/`, superando el mínimo cuantitativo general de 15. Doce capturas muestran expresamente ejecuciones desde VS Code; hacen falta 3 capturas únicas adicionales para llegar a 15 de ese entorno.
 
 ## Evidencias visuales
 
@@ -80,25 +80,23 @@ El listado de archivos, descripción de cada captura y guía de inserción en el
 
 ## Estado de cambios y commits
 
-- Commits existentes verificados con `git log`: `cd58e10` (documentar verificación ETL UTC), `8f21f0d` (ignorar carpeta de capturas originales), `ca23265` (bitácora inicial, evidencias e ignorados locales), `9a6413a` (replicación incremental DRP), `c6e0aec` (balance del sharding hash), `1d232c9` (latencia de replicación) y el commit inicial `691ea94`.
-- El usuario informó que después del commit `cd58e10` ejecutó `git status` y el árbol quedó limpio. Esta bitácora y el borrador del informe Markdown se modificaron o crearon posteriormente; deben revisarse antes de decidir si se guardan en un nuevo commit. No se ejecutaron comandos Git de escritura durante la elaboración del borrador.
+- Commits existentes verificados con `git log`: `d72ace5` (borrador, diagramas y evidencia de regresión), `cd58e10` (verificación ETL UTC), `8f21f0d` (ignorar capturas originales), `ca23265` (bitácora y evidencias), `9a6413a` (replicación incremental DRP), `c6e0aec` (balance hash), `1d232c9` (latencia de replicación) y el inicial `691ea94`.
+- El commit `d72ace5` contiene el borrador Markdown, los diagramas y las pruebas de regresión. Las revisiones de documentación realizadas después de ese commit están pendientes de guardar. No se han ejecutado comandos Git de escritura para esta revisión.
 - El directorio `docs/capturas_originales/` está ignorado por Git; sus copias seleccionadas están en `docs/evidencias/`.
 - No incluir `.env`, `.venv`, cachés ni JSON generados en los commits.
 
 ## Preparación del borrador del informe
 
-- Se creó `docs/BORRADOR_INFORME.md` como documento intermedio completo para preparar el Word solicitado por el docente. Incluye portada con campos pendientes, resumen, objetivos, alcance, método, marco teórico, descripción de la solución, implementación aplicada, comparaciones antes/después, limitaciones, conclusiones, recomendaciones, referencias y anexos.
+- Se creó `docs/BORRADOR_INFORME.md` como documento intermedio completo para preparar el Word solicitado por el docente. Incluye portada, resumen, objetivos, alcance, método, marco teórico, descripción de la solución, implementación aplicada, comparaciones antes/después, limitaciones, conclusiones, recomendaciones, referencias y anexos.
 - El contenido distingue los comportamientos ejecutados localmente de los servicios que solo están configurados o descritos, y enlaza figuras con las evidencias disponibles.
-- Pendientes antes del Word: completar autoría y ciudad; revisar bibliografía y estilo requerido; confirmar que las cifras citadas corresponden a sus capturas; reunir 3 capturas auténticas adicionales de VS Code para llegar a 15; y verificar que el documento maquetado alcance 14 páginas.
-- Se creó `docs/PLAN_ENTREGA.md` con una matriz de trazabilidad de la consigna, orden de cierre y criterios de aceptación para el DOCX y el ZIP. El requisito cuantitativo de capturas se interpreta estrictamente: 15 capturas únicas de VS Code; al actualizar este plan había una y quedaban 14 por recopilar.
-- El usuario compartió una imagen con los datos del módulo/programa. Se actualizó la portada del borrador a “Módulo 10: Diseño de Arquitecturas para Sistemas de Big Data”, “Maestría en Big Data y Analítica de Datos (V1 G1 2025 S28 U49)” y sede Sucre. El nombre oficial de la universidad, autoría y lugar/ciudad quedan por confirmar.
-- El usuario confirmó el nombre institucional “Universidad Amazónica de Pando”; se incorporó en la portada. Quedan por confirmar autoría y ciudad de presentación.
+- Pendientes antes del Word: confirmar si se requieren integrantes adicionales, cohorte o ciudad en portada; revisar bibliografía y estilo requerido; confirmar que las cifras citadas corresponden a sus capturas; reunir 3 capturas auténticas adicionales de VS Code para llegar a 15; y verificar que el documento maquetado alcance 14 páginas.
+- Se creó `docs/PLAN_ENTREGA.md` con una matriz de trazabilidad de la consigna, orden de cierre y criterios de aceptación para el DOCX y el ZIP. La portada consigna la Universidad Amazónica de Pando, el Módulo 10 y el autor Ruben Cabrera. La imagen del módulo también muestra cohorte/código y Sucre; confirmar si deben añadirse esos datos.
 
 ## Pruebas de regresión para mejoras de resiliencia
 
 - Se extrajo `PlanDRP._replicar_pendientes()` para aislar la sincronización incremental del ciclo periódico y poder comprobarla sin iniciar el hilo ni esperar la latencia simulada.
 - Se creó `tests/test_mejoras_aplicadas.py` con tres casos: latencia simulada nunca negativa, distribución de 500 clientes entre los tres shards y replicación DRP completa/incremental sin duplicados.
-- Se actualizó el comando de prueba específica en `README.md` a `pytest tests/test_mejoras_aplicadas.py -v`. Al agregar las pruebas, su ejecución quedó pendiente; posteriormente el usuario compartió una corrida exitosa descrita a continuación.
+- Se actualizó el comando de prueba específica en `README.md` a `pytest tests/test_mejoras_aplicadas.py -v`. El usuario compartió una corrida exitosa descrita a continuación.
 - Ejecución compartida por el usuario desde el entorno `.venv`: `python -m pytest tests/test_mejoras_aplicadas.py -v` recogió 3 pruebas y las 3 pasaron (`3 passed in 0.16s`, Python 3.12.3, pytest 9.1.1).
 - El usuario indicó que la captura está en `docs/capturas_originales/141 Terminal_VSCode.png`. Se verificó el origen (58 KB), se copió sin modificar a `docs/evidencias/27-pruebas-regresion-vscode.png` y se inspeccionó visualmente: muestra `3 passed in 0.16s` y los tres nombres de pruebas.
 
@@ -114,3 +112,10 @@ El listado de archivos, descripción de cada captura y guía de inserción en el
 - Se prepararon cinco diagramas vectoriales SVG: arquitectura (Figura 1), flujo ETL (Figura 27), secuencia DRP (Figura 28), ciclo de Circuit Breaker (Figura 29) y comparación de sharding antes/después (Figura 30).
 - La arquitectura distingue ejecución local observada de servicios configurados que no se levantaron. Los otros diagramas reflejan comportamientos simulados y resultados de corridas sintéticas; sus pies y notas mantienen esos límites explícitos.
 - Se reemplazó el bloque Mermaid del flujo lógico por la Figura 1 en SVG y se enlazaron las cuatro figuras adicionales desde el borrador. Se añadieron notas de uso en `docs/figuras/README.md`; falta revisar la presentación al maquetar el DOCX y, si la versión de Word no admite SVG, exportar PNG sin modificar el contenido.
+
+## Ajuste de referencias bibliográficas
+
+- A solicitud del usuario, se redujo la bibliografía del borrador de diez a seis fuentes principales: Lambda/Kappa, capas medallion, CAP, Circuit Breaker, recuperación ante desastres (NIST) y fechas UTC en Python.
+- Se renumeraron las citas en el cuerpo y se simplificaron los pasajes de Kafka, Delta Lake y observabilidad que dependían de fuentes retiradas, para evitar citas sin referencia. También se quitó la referencia de Airflow que no tenía cita en el texto.
+- Se reemplazaron los espacios finales de las líneas de portada por saltos de línea explícitos para que `git diff --check` no marque esos renglones.
+- Se debe regenerar la vista HTML cada vez que se cierre una actualización del Markdown; ambas versiones se actualizaron con esta reducción.

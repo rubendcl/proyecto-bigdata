@@ -1,22 +1,20 @@
 # Diseño de una arquitectura Big Data para el monitoreo de transacciones financieras
 
-> **Borrador académico en Markdown — versión para revisión, 22 de octubre de 2026**  
-> Este documento es la fuente de contenido para preparar el informe final en Microsoft Word. Los campos entre corchetes deben completarse antes de entregar. La evidencia descrita procede de una aplicación didáctica local con datos sintéticos; no representa una plataforma financiera de producción.
+> **Borrador académico en Markdown — versión para revisión, 22 de octubre de 2026**\
+> Este documento es la fuente de contenido para preparar el informe final en Microsoft Word. La evidencia descrita procede de una aplicación didáctica local con datos sintéticos; no representa una plataforma financiera de producción.
 
 ## Portada
 
-**Universidad Amazónica de Pando**  
-**Maestría en Big Data y Analítica de Datos (V1 G1 2025 S28 U49)**  
-**Módulo 10:** Diseño de Arquitecturas para Sistemas de Big Data  
+**Universidad Amazónica de Pando**\
+**Maestría en Big Data y Analítica de Datos**\
+**Módulo 10:** Diseño de Arquitecturas para Sistemas de Big Data
 
 ### Diseño de una arquitectura Big Data para el monitoreo de transacciones financieras
 
 **Informe aplicado**
 
-**Autor(es):** [Nombre completo / integrantes del grupo]  
-**Docente:** MSc. Ing. Marcelo Fernando Condori Mendoza  
-**Sede:** Sucre  
-**Lugar:** [Ciudad, Bolivia]  
+**Autor:** Ruben Cabrera\
+**Docente:** MSc. Ing. Marcelo Fernando Condori Mendoza\
 **Fecha:** 22 de octubre de 2026
 
 ---
@@ -110,13 +108,13 @@ En el repositorio, la arquitectura Lambda aparece como referencia conceptual. El
 
 ### 4.3 Ingesta, batch y streaming
 
-El procesamiento batch trabaja sobre un conjunto finito de registros y resulta adecuado para agregaciones y reprocesamiento. El streaming procesa eventos conforme llegan y se usa cuando una respuesta reciente tiene valor. Kafka organiza eventos en topics y particiones; las claves permiten dirigir eventos relacionados a una misma partición y preservar el orden dentro de ella. La documentación de Kafka describe particiones y replicación a nivel de partición [2].
+El procesamiento batch trabaja sobre un conjunto finito de registros y resulta adecuado para agregaciones y reprocesamiento. El streaming procesa eventos conforme llegan y se usa cuando una respuesta reciente tiene valor. Kafka organiza eventos en topics y particiones; en el proyecto, el productor y consumidor están implementados, aunque no se levantó el broker en las pruebas documentadas.
 
 El productor y consumidor Kafka forman parte del proyecto, pero la ejecución documentada en este informe no inició el broker Docker. La demo local utiliza el simulador y procesamiento en memoria/archivos, así que la comparación presentada es ilustrativa y no una evaluación de latencia de Kafka frente a Spark.
 
 ### 4.4 Lakehouse y capas Bronze, Silver y Gold
 
-El patrón medallion organiza datos en capas de calidad progresiva: Bronze conserva datos de origen, Silver contiene datos validados y transformados, y Gold reúne vistas agregadas para análisis. La documentación de Databricks describe estas capas como un patrón de diseño para mejorar gradualmente la estructura y calidad de los datos [3]. Delta Lake, por su parte, añade transacciones ACID, manejo de metadatos y compatibilidad con procesamiento batch y streaming sobre data lakes [4].
+El patrón medallion organiza datos en capas de calidad progresiva: Bronze conserva datos de origen, Silver contiene datos validados y transformados, y Gold reúne vistas agregadas para análisis. La documentación de Databricks describe estas capas como un patrón de diseño para mejorar gradualmente la estructura y calidad de los datos [2].
 
 En la prueba local, el código implementa la separación de archivos JSON en `datos/lakehouse/raw/`, `silver/` y `gold/`. El código de la demo instancia `MotorBatch(usar_spark=False)`; por tanto, esta ejecución usa la ruta local y no una tabla Delta ni un motor Spark distribuido. Los nombres de las capas describen la organización del flujo, no una implementación Delta activa.
 
@@ -130,29 +128,29 @@ El proyecto mide un balance comparando el shard con menor número de registros c
 
 La replicación síncrona espera confirmación de las réplicas activas antes de declarar completa la escritura; a cambio, aumenta la latencia observada. La replicación asíncrona confirma en el líder y propaga después, reduciendo la espera a costa de una ventana potencial de divergencia. La modalidad multi-líder acepta operaciones desde más de un líder y requiere tratar conflictos. Estas son estrategias con compromisos distintos; sus nombres en la aplicación describen modelos simulados.
 
-El teorema CAP trata los compromisos entre consistencia y disponibilidad cuando hay una partición de red; no significa simplemente que un sistema elige permanentemente dos de tres propiedades en todos los momentos. Gilbert y Lynch revisan su formalización y sus implicaciones prácticas [5]. El cuadro CAP de la demo se usa como apoyo docente y sus clasificaciones de estrategias deben leerse como simplificaciones, no como una garantía formal acerca de implementaciones reales.
+El teorema CAP trata los compromisos entre consistencia y disponibilidad cuando hay una partición de red; no significa simplemente que un sistema elige permanentemente dos de tres propiedades en todos los momentos. Gilbert y Lynch revisan su formalización y sus implicaciones prácticas [3]. El cuadro CAP de la demo se usa como apoyo docente y sus clasificaciones de estrategias deben leerse como simplificaciones, no como una garantía formal acerca de implementaciones reales.
 
 ### 4.7 Circuit Breaker y tolerancia a fallos
 
-El patrón Circuit Breaker observa fallos en una operación protegida y, al superar un umbral, rechaza temporalmente nuevas llamadas para evitar agotar recursos o propagar una falla en cascada. Un estado semiabierto permite sondear la recuperación antes de cerrar el circuito. Fowler describe el patrón como un envoltorio que mide fallos, abre el circuito y devuelve error sin ejecutar la llamada protegida durante ese periodo [6]. La Figura 29 sintetiza el ciclo de estados que se ilustra en el módulo.
+El patrón Circuit Breaker observa fallos en una operación protegida y, al superar un umbral, rechaza temporalmente nuevas llamadas para evitar agotar recursos o propagar una falla en cascada. Un estado semiabierto permite sondear la recuperación antes de cerrar el circuito. Fowler describe el patrón como un envoltorio que mide fallos, abre el circuito y devuelve error sin ejecutar la llamada protegida durante ese periodo [4]. La Figura 29 sintetiza el ciclo de estados que se ilustra en el módulo.
 
 El módulo local simula llamadas exitosas y fallidas, cuenta resultados y cambia entre estados. No prueba una dependencia bancaria real ni una recuperación de servicio externo. El carácter aleatorio de los fallos explica que contadores y secuencias varíen entre corridas.
 
 ### 4.8 Observabilidad
 
-La observabilidad se apoya en señales que permiten entender el comportamiento de una aplicación. OpenTelemetry define métricas, logs y trazas como señales de telemetría y explica que las trazas muestran el recorrido de una petición, las métricas cuantifican medidas en tiempo de ejecución y los logs registran eventos [7].
+La observabilidad se apoya en señales que permiten entender el comportamiento de una aplicación. En el alcance de este proyecto se examinan métricas, logs y trazas para describir cantidades, eventos y recorridos registrados por el simulador.
 
 El módulo del proyecto implementa contadores, medidores, histogramas, trazas y reglas de alerta en memoria. Durante una corrida individual registró 94 mensajes, 6 errores y una tasa de error de 6,38 %, lo que disparó una alerta configurada sobre 5 %. No se verificó exportación a Prometheus, Grafana, Jaeger u OpenTelemetry Collector; esas integraciones son extensiones recomendables, no resultados realizados.
 
 ### 4.9 Continuidad y recuperación ante desastres
 
-Un plan de continuidad identifica procesos críticos, escenarios de interrupción y recursos de recuperación. NIST SP 800-34 presenta un enfoque para preparar planes de contingencia de sistemas de información y define, entre otros conceptos, RTO como el límite de indisponibilidad tolerable y RPO como el punto temporal al que los datos deben poder recuperarse [8]. RTO expresa una duración de recuperación; RPO expresa la pérdida temporal de datos admisible.
+Un plan de continuidad identifica procesos críticos, escenarios de interrupción y recursos de recuperación. NIST SP 800-34 presenta un enfoque para preparar planes de contingencia de sistemas de información y define, entre otros conceptos, RTO como el límite de indisponibilidad tolerable y RPO como el punto temporal al que los datos deben poder recuperarse [5]. RTO expresa una duración de recuperación; RPO expresa la pérdida temporal de datos admisible.
 
 El módulo DRP define procesos, sitios hot/warm/cold, replicación, failover, failback y simulacros. En el escenario probado, estos elementos y el redireccionamiento DNS/anycast son simulados dentro de un proceso Python; no hay centros de datos ni red multi-región activos. La secuencia de prueba y la restauración final del estado se representan en la Figura 28.
 
 ### 4.10 Marcas temporales UTC
 
-Las marcas temporales deben incluir una zona horaria cuando representan UTC, para evitar interpretar una fecha ingenua como hora local. La documentación oficial de Python 3.12 marca `datetime.utcnow()` como obsoleto y recomienda objetos con zona horaria como `datetime.now(timezone.utc)` [9]. Esta recomendación motivó una mejora pequeña en el pipeline Silver.
+Las marcas temporales deben incluir una zona horaria cuando representan UTC, para evitar interpretar una fecha ingenua como hora local. La documentación oficial de Python 3.12 marca `datetime.utcnow()` como obsoleto y recomienda objetos con zona horaria como `datetime.now(timezone.utc)` [6]. Esta recomendación motivó una mejora pequeña en el pipeline Silver.
 
 ## 5. Descripción de la solución
 
@@ -380,7 +378,7 @@ El esquema de la Figura 1 distingue el camino local que sí se ejecutó de los s
 | 4 | `src/procesamiento/motor_batch.py` y `README.md` | `datetime.utcnow()` generaba advertencia de obsolescencia; la instrucción directa del DRP no resolvía `src`. | Se usó `datetime.now(timezone.utc)` y se cambió el comando del README a `python -m src.recuperacion.plan_drp`. | El ETL completó en 0,047 s, sin advertencia, con 500 entradas y 499 válidas. |
 | 5 | `src/recuperacion/plan_drp.py`, `tests/test_mejoras_aplicadas.py` y `README.md` | El repositorio documentaba comandos de pytest, pero no tenía una carpeta de pruebas; la sincronización DRP estaba integrada dentro del hilo y era difícil de comprobar aisladamente. | Se extrajo `_replicar_pendientes()` y se añadieron pruebas de regresión para latencia no negativa, uso de los tres shards y sincronización DRP incremental sin duplicados. Se actualizó el comando de pytest del README. | El usuario ejecutó `python -m pytest tests/test_mejoras_aplicadas.py -v`: 3 pruebas pasaron en 0,16 s; la captura de VS Code quedó archivada como evidencia 27. |
 
-Las mejoras de latencia, sharding y DRP se registraron en commits individuales; la modificación UTC y su documentación se guardaron en `cd58e10`. Las pruebas de regresión y la extracción del método DRP son cambios posteriores aún pendientes de commit. El usuario informó que las tres pruebas pasaron; para la evidencia visual y el cumplimiento estricto del requisito docente aún se deben guardar capturas adicionales de VS Code.
+Las mejoras de latencia, sharding y DRP, la corrección UTC, las pruebas de regresión y los diagramas se guardaron en commits del repositorio, incluido `d72ace5`. Las tres pruebas de regresión pasaron en la ejecución informada por el usuario. Para el cumplimiento estricto del requisito docente aún se requieren tres capturas únicas adicionales desde VS Code.
 
 ## 8. Limitaciones
 
@@ -422,23 +420,15 @@ Las mejoras de latencia, sharding y DRP se registraron en commits individuales; 
 
 [1] Lin, J. (2017). The Lambda and the Kappa. *IEEE Internet Computing, 21*(5), 60–66. https://cs.uwaterloo.ca/~jimmylin/publications/Lin_IEEE2017b.pdf
 
-[2] Apache Software Foundation. (s. f.). *Apache Kafka documentation: Introduction and design*. https://kafka.apache.org/documentation/
+[2] Databricks. (s. f.). *What is the medallion lakehouse architecture?* https://docs.databricks.com/gcp/en/lakehouse/medallion
 
-[3] Databricks. (2026, 11 de septiembre). *What is the medallion lakehouse architecture?* https://docs.databricks.com/gcp/en/lakehouse/medallion
+[3] Gilbert, S., & Lynch, N. A. (2012). Perspectives on the CAP Theorem. *Computer, 45*(2), 30–36. https://doi.org/10.1109/MC.2011.389
 
-[4] Delta Lake. (s. f.). *Delta Lake documentation*. https://docs.delta.io/
+[4] Fowler, M. (2014, 6 de marzo). *Circuit Breaker*. https://martinfowler.com/bliki/CircuitBreaker.html
 
-[5] Gilbert, S., & Lynch, N. A. (2012). Perspectives on the CAP Theorem. *Computer, 45*(2), 30–36. https://doi.org/10.1109/MC.2011.389
+[5] Swanson, M., Bowen, P., Phillips, A., Gallup, D., & Lynes, D. (2010). *Contingency Planning Guide for Federal Information Systems* (NIST SP 800-34 Rev. 1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-34r1
 
-[6] Fowler, M. (2014, 6 de marzo). *Circuit Breaker*. https://martinfowler.com/bliki/CircuitBreaker.html
-
-[7] OpenTelemetry. (s. f.). *Signals*. https://opentelemetry.io/docs/concepts/signals/
-
-[8] Swanson, M., Bowen, P., Phillips, A., Gallup, D., & Lynes, D. (2010). *Contingency Planning Guide for Federal Information Systems* (NIST SP 800-34 Rev. 1). National Institute of Standards and Technology. https://doi.org/10.6028/NIST.SP.800-34r1
-
-[9] Python Software Foundation. (2026). *datetime — Basic date and time types*. Python 3 documentation. https://docs.python.org/3/library/datetime.html
-
-[10] Apache Software Foundation. (2024). *DAGs — Apache Airflow 2.10.4 documentation*. https://airflow.apache.org/docs/apache-airflow/2.10.4/core-concepts/dags.html
+[6] Python Software Foundation. (s. f.). *datetime — Basic date and time types*. Python 3 documentation. https://docs.python.org/3/library/datetime.html
 
 ## 12. Anexos
 
@@ -472,7 +462,7 @@ El catálogo con 37 capturas, su descripción y notas de línea base/posterior s
 
 ### Anexo C. Pendientes antes de convertir a Word
 
-- [ ] Completar institución, autoría o integrantes y ciudad.
+- [x] Institución: Universidad Amazónica de Pando; autor consignado: Ruben Cabrera. Confirmar si deben añadirse integrantes, cohorte o ciudad de presentación.
 - [ ] Añadir al menos 3 capturas adicionales de ejecución en VS Code si se requiere que las 15 sean explícitamente de ese entorno.
 - [ ] Revisar que la corrida escogida para cada cifra coincide con la captura citada.
 - [ ] Dar formato APA 7 o el estilo requerido por el docente y comprobar los datos bibliográficos.

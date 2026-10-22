@@ -1,14 +1,16 @@
 # Diseño de Arquitecturas para Sistemas de Big Data
 
-> **Maestría en Big Data y Analítica de Datos · 2026**  
+> **Universidad Amazónica de Pando · Maestría en Big Data y Analítica de Datos · 2026**\
 > **Docente:** MSc. Ing. Marcelo Fernando Condori Mendoza  
-> **Módulo:** Contenidos y Tendencias Tecnológicas
+> **Módulo 10:** Diseño de Arquitecturas para Sistemas de Big Data
 
 ---
 
 ## Descripción del Proyecto
 
-Proyecto académico aplicado que implementa los cinco bloques del módulo utilizando un **sistema de monitoreo de transacciones financieras** como caso de uso. Demuestra de forma práctica los conceptos de escalabilidad, alta disponibilidad, recuperación ante desastres, replicación y particionamiento en arquitecturas Big Data reales.
+Proyecto académico aplicado que representa un **sistema de monitoreo de transacciones financieras sintéticas** mediante cinco bloques didácticos. La demo local ejecuta ETL sobre archivos JSON y simulaciones de resiliencia. El repositorio también contiene configuraciones para servicios externos; su presencia no significa que formen parte de la ruta local probada ni que constituyan una plataforma productiva.
+
+> **Alcance de ejecución:** la ruta local documentada no requiere Docker, Kafka, PostgreSQL, Airflow, Spark ni Delta Lake. Los servicios del stack Docker son opcionales y deben verificarse por separado antes de atribuirles resultados.
 
 ```
 Clase02 · Diseño de Arquitecturas para Sistemas de Big Data
@@ -17,7 +19,9 @@ Escalabilidad · Disponibilidad · DRP · Replicación · Particionamiento
 
 ---
 
-## Arquitectura del Sistema
+## Arquitectura de Referencia
+
+El siguiente esquema resume componentes y conceptos presentes en el repositorio. No representa una instalación integrada que se haya validado de extremo a extremo. La demo usa el simulador, ETL local con pandas/JSON y módulos de resiliencia en proceso.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
@@ -101,10 +105,10 @@ proyecto-bigdata/
 | Bloque del módulo | Concepto | Archivo(s) implementados |
 |---|---|---|
 | **Bloque 1** · Soluciones Escalables | Las 5 V's, Escalado horizontal, Lambda/Kappa | `simulador_transacciones.py`, `motor_batch.py` |
-| **Bloque 1** · Cloud-native | Contenedores, Autoescalado, IaC | `docker-compose.yml`, `scripts/inicializar.sh` |
+| **Bloque 1** · Entorno | Configuración de contenedores y script de inicialización | `docker-compose.yml`, `scripts/inicializar.sh` (no equivalen por sí solos a autoescalado ni IaC de producción) |
 | **Bloque 2** · Tecnologías | Batch vs Streaming, Lakehouse, Orquestación | `motor_batch.py`, `pipeline_arquitectura.py` |
 | **Bloque 2** · Almacenamiento | Data Lake / Warehouse / Lakehouse | `init_warehouse.sql`, `docker-compose.yml` |
-| **Bloque 3** · Alta Disponibilidad | Circuit Breaker, Failover, Multi-AZ | `circuit_breaker.py`, `plan_drp.py` |
+| **Bloque 3** · Resiliencia | Circuit Breaker y failover simulado | `circuit_breaker.py`, `plan_drp.py` |
 | **Bloque 3** · Observabilidad | Métricas, Logs, Trazas, Alertas | `observabilidad.py`, `app_streamlit.py` |
 | **Bloque 4** · DRP / BCP | RTO, RPO, Sitios Hot/Warm/Cold | `plan_drp.py` |
 | **Bloque 4** · Multi-región | Replicación entre regiones, DNS/anycast | `replicacion.py`, `plan_drp.py` |
@@ -189,20 +193,21 @@ cd proyecto-bigdata
 # 2. Dar permisos al script
 chmod +x scripts/inicializar.sh
 
-# 3. Inicializar con Docker (stack completo)
-./scripts/inicializar.sh
-
-# 3b. Inicializar solo Python (sin Docker)
+# 3. Inicializar Python sin Docker (recomendado para la demo local)
 ./scripts/inicializar.sh --solo-python
+
+# Para configurar Python y además intentar iniciar el stack Docker:
+./scripts/inicializar.sh
 ```
 
-El script realizará automáticamente:
+El modo `--solo-python` realiza:
 1. Verificación de prerequisitos
 2. Creación de variables de entorno (`.env`)
-3. Entorno virtual Python + instalación de dependencias
+3. Entorno virtual Python e instalación de dependencias base
 4. Creación de directorios del Lakehouse
 5. Generación de datos de muestra
-6. Levantamiento de servicios Docker
+
+El modo predeterminado también intenta levantar los servicios definidos en Docker Compose. No es necesario para ejecutar `demo.py`.
 
 ---
 
@@ -236,12 +241,13 @@ source .venv/bin/activate           # Linux / macOS
 #### Paso 4: Instalar dependencias
 
 ```bash
-# Dependencias base (rápido, ~2 min)
-pip install pandas kafka-python boto3 psycopg2-binary sqlalchemy \
+# Dependencias base para demo, dashboard y pruebas locales
+pip install pandas numpy kafka-python boto3 psycopg2-binary sqlalchemy \
             streamlit plotly python-dotenv pydantic tenacity rich \
             pytest faker
 
-# Dependencias completas (incluye PySpark y Airflow, ~10 min)
+# El archivo completo incluye componentes opcionales.
+# Su instalación no forma parte de la ruta local verificada.
 pip install -r requirements.txt
 ```
 
@@ -278,6 +284,19 @@ docker compose logs -f kafka
 
 ## Ejecución
 
+### Ruta local reproducible
+
+La ruta local probada en Linux con Python 3.12.3 utiliza el entorno virtual y las dependencias base. Desde la raíz del repositorio:
+
+```bash
+source .venv/bin/activate
+python --version
+python demo.py
+python -m pytest tests/test_mejoras_aplicadas.py -v
+```
+
+La demo y las pruebas no requieren servicios Docker. Los módulos individuales también están documentados abajo. Los valores aleatorios pueden variar entre corridas.
+
 ### Demo Standalone (sin Docker requerido)
 
 La forma más rápida de ejecutar el proyecto completo:
@@ -300,7 +319,7 @@ python demo.py --bloque 5    # Replicación y Particionamiento
 python demo.py --completo
 ```
 
-**Salida esperada — ejemplo Bloque 3:**
+**Salida ilustrativa — ejemplo Bloque 3** (los resultados cambian por el carácter aleatorio de la simulación):
 ```
 ════════════════════════════════════════════════════
   BLOQUE 3 · ALTA DISPONIBILIDAD
@@ -372,9 +391,11 @@ python src/monitoreo/observabilidad.py
 
 ---
 
-### Con Docker (stack completo)
+### Servicios opcionales con Docker
 
-Una vez levantado el stack con `docker compose up -d`:
+El archivo `docker-compose.yml` declara servicios complementarios. Esta configuración puede levantarse con `docker compose up -d`, pero no fue parte de las ejecuciones locales descritas en el informe. Comprueba el estado y la conectividad de cada servicio antes de utilizarlo. La configuración actual de Kafka declara un solo broker y factor de replicación 1; no ofrece redundancia de broker.
+
+Si se inicia Kafka, los scripts siguientes intentan conectarse a ese servicio:
 
 #### Productor Kafka (streaming)
 
@@ -418,16 +439,10 @@ Contraseña: bigdata2026
 
 ---
 
-### Tests
+### Pruebas de regresión locales
 
 ```bash
 source .venv/bin/activate
-
-# Ejecutar todos los tests
-pytest tests/ -v
-
-# Test con cobertura
-pytest tests/ --cov=src --cov-report=html
 
 # Pruebas de regresión de las mejoras documentadas
 pytest tests/test_mejoras_aplicadas.py -v
@@ -436,6 +451,8 @@ pytest tests/test_mejoras_aplicadas.py -v
 ---
 
 ## Detener y Limpiar
+
+> **Atención:** `docker compose down -v` elimina los volúmenes de datos de los servicios. El último comando borra archivos generados localmente en `datos/lakehouse/`. Ejecuta esas opciones solo si deseas eliminar esos datos.
 
 ```bash
 # Detener servicios (preserva los datos en volúmenes)
@@ -459,25 +476,25 @@ rm -rf datos/lakehouse/{raw,silver,gold}/*
 
 | Concepto | Implementación |
 |---|---|
-| Las 5 V's del Big Data | `simulador_transacciones.py` — genera datos con Volumen, Velocidad, Variedad, Veracidad y Valor |
-| Escalado horizontal | Múltiples particiones Kafka + sharding en 3 nodos |
-| Desacoplamiento de componentes | Productor → Kafka → Consumidor → ETL (independientes) |
-| Elasticidad | Docker Compose permite escalar réplicas: `docker compose up --scale kafka=3` |
-| Arquitectura Lambda | Capa batch (`motor_batch.py`) + Capa velocidad (`productor_kafka.py` + `consumidor_kafka.py`) |
-| Arquitectura Kappa | Pipeline único de streaming con Kafka como backbone |
-| Data Mesh / Lakehouse | Zonas Bronze/Silver/Gold en SeaweedFS (S3) con formato Parquet / Delta Lake |
+| Las 5 V's del Big Data | El simulador genera registros sintéticos con campos demostrativos; no representa una carga Big Data real |
+| Escalado horizontal | Se ilustra mediante generación de lotes y sharding en memoria; no se escala un clúster real |
+| Desacoplamiento | Productor y consumidor Kafka están en el código, pero su integración no se verificó en las corridas locales descritas |
+| Contenedores | `docker-compose.yml` configura servicios; no implica autoescalado ni infraestructura como código de producción |
+| Arquitectura Lambda | Referencia conceptual: ETL local y módulos de ingesta separados |
+| Arquitectura Kappa | Concepto presentado en la demo; no se verificó un pipeline de streaming integrado |
+| Capas de datos | Bronze/Silver/Gold se escriben como archivos JSON locales en la ruta ejecutada |
 
 ### Bloque 2 · Selección de Tecnologías
 
 | Concepto | Implementación |
 |---|---|
-| Batch (Apache Spark) | `motor_batch.py` — ETL con PySpark o pandas |
+| Batch | `motor_batch.py` ejecutado localmente con `usar_spark=False` y archivos JSON; Spark no se usó en las pruebas documentadas |
 | Streaming (Apache Kafka) | `productor_kafka.py` y `consumidor_kafka.py` |
-| Data Lake | SeaweedFS (zona-raw) — datos crudos en cualquier formato |
-| Data Warehouse | PostgreSQL con Star Schema (`init_warehouse.sql`) |
-| Data Lakehouse | Delta Lake sobre SeaweedFS — ACID + formatos abiertos |
-| Orquestación | Apache Airflow DAG (`pipeline_arquitectura.py`) |
-| Gobernanza | Linaje registrado en `control.linaje_pipeline` |
+| Data Lake | SeaweedFS está configurado en Docker; no se conectó en la ruta local probada |
+| Data Warehouse | PostgreSQL y DDL Star Schema están configurados; no se probaron en la corrida documentada |
+| Data Lakehouse | Las capas locales son JSON; no se escribió Delta Lake en esta evidencia |
+| Orquestación | Existe un DAG Airflow; no se ejecutó en Airflow durante esta revisión |
+| Gobernanza | No atribuir persistencia de linaje a un servicio operativo sin verificarlo en el código y la configuración |
 | Transformación gobernada | Pipeline versionado Bronze → Silver → Gold |
 
 ### Bloque 3 · Alta Disponibilidad
@@ -485,12 +502,11 @@ rm -rf datos/lakehouse/{raw,silver,gold}/*
 | Concepto | Implementación |
 |---|---|
 | Circuit Breaker | `circuit_breaker.py` — estados CERRADO/ABIERTO/SEMI-ABIERTO |
-| Redundancia de componentes | Kafka con múltiples particiones, PostgreSQL con pool de conexiones |
+| Redundancia de componentes | La configuración actual no demuestra alta disponibilidad; Kafka tiene un broker y factor de replicación 1 |
 | Replicación de datos | `replicacion.py` — sincronización en nodos activos y pasivos |
 | Checkpointing | `consumidor_kafka.py` — commit manual de offsets post-procesamiento |
-| Auto-recuperación | `consumidor_kafka.py` — reconexión automática ante fallos Kafka |
-| Failover automático | `plan_drp.py` — activación automática del sitio standby |
-| Multi-AZ / Multi-región | `docker-compose.yml` — zonas de disponibilidad simuladas |
+| Reintentos / failover | Lógica disponible en código; el failover DRP se simula localmente |
+| Multi-AZ / Multi-región | Concepto representado por el simulador DRP; Compose local no crea regiones ni zonas reales |
 | Observabilidad | `observabilidad.py` — Métricas, Logs estructurados, Trazas, Alertas |
 
 ### Bloque 4 · Recuperación ante Desastres
@@ -499,12 +515,10 @@ rm -rf datos/lakehouse/{raw,silver,gold}/*
 |---|---|
 | Plan DRP | `plan_drp.py` — runbook completo automatizado |
 | Análisis de Impacto (BIA) | Lista de procesos con prioridad, RTO y RPO individuales |
-| Sitio Hot (< 1 min failover) | `SitioRespaldo(tipo=TipoSitio.HOT)` en `plan_drp.py` |
-| Sitio Warm (5-15 min) | `SitioRespaldo(tipo=TipoSitio.WARM)` — sincronización semi-continua |
-| Sitio Cold (> 1 hora) | `SitioRespaldo(tipo=TipoSitio.COLD)` — backups periódicos |
-| RTO (Recovery Time Objective) | Medido y comparado con objetivo en cada simulacro |
-| RPO (Recovery Point Objective) | Calculado desde el último backup exitoso |
-| Simulacros periódicos | `drp.ejecutar_simulacro()` — valida RTO/RPO reales |
+| Sitios Hot/Warm/Cold | Tipos representados en el simulador; no son centros de datos reales ni se validaron esos tiempos de recuperación |
+| RTO (Recovery Time Objective) | Tiempo calculado dentro del simulacro local y comparado con un objetivo configurado |
+| RPO (Recovery Point Objective) | Tiempo desde la sincronización simulada más reciente; el conteo perdido se informa aparte |
+| Simulacros | `drp.ejecutar_simulacro()` — calcula indicadores dentro de una simulación local |
 | BCP (Business Continuity Plan) | Procesos críticos ordenados por prioridad y tolerancia |
 | Multi-región | Arquitectura Región A (activa) → B (standby) → C (cold) |
 
@@ -513,16 +527,16 @@ rm -rf datos/lakehouse/{raw,silver,gold}/*
 | Concepto | Implementación |
 |---|---|
 | Sharding horizontal | `GestorParticionamiento` — distribuye filas por clave de partición |
-| Hash consistente | `ShardHashing` — nodos virtuales para distribución uniforme |
+| Hash | `ShardHashing` — estrategia demostrativa; el balance observado depende de cada muestra |
 | Particionamiento por rango | `ShardPorRango` — útil para series temporales |
-| Particionamiento geográfico | `ShardGeografico` — datos cerca del usuario (latencia + compliance) |
-| Particionamiento vertical | `particionar_verticalmente()` — columnas hot vs. cold |
+| Particionamiento geográfico | `ShardGeografico` — asignación por región del registro; no valida latencia ni cumplimiento normativo |
+| Particionamiento vertical | `particionar_verticalmente()` — separa grupos de columnas en la estructura de datos |
 | Detección de hotspots | `estadisticas()` — alerta si balance < 70% |
-| Replicación síncrona | `ReplicacionSincrona` — acks=all, máxima consistencia (CP) |
-| Replicación asíncrona | `ReplicacionAsincrona` — menor latencia, riesgo pérdida (AP) |
-| Multi-líder (multi-master) | `ReplicacionMultiLider` — escritura en múltiples regiones |
+| Replicación síncrona | `ReplicacionSincrona` — comparación simulada de latencias y confirmaciones |
+| Replicación asíncrona | `ReplicacionAsincrona` — comparación simulada; no hay réplicas remotas activas |
+| Multi-líder (multi-master) | `ReplicacionMultiLider` — comportamiento representado en memoria, sin regiones activas |
 | Resolución de conflictos | Last-Write-Wins (LWW) por timestamp en multi-líder |
-| Teorema CAP | Demostrado comparativamente con latencias medidas |
+| Teorema CAP | Explicación conceptual acompañada de comparaciones simuladas; no es una prueba formal de un clúster |
 
 ---
 
@@ -625,13 +639,13 @@ docker compose up -d seaweedfs seaweedfs-init
 | Tecnología | Versión | Rol en la arquitectura |
 |---|---|---|
 | **Python** | 3.10+ | Lenguaje principal |
-| **Apache Kafka** | 7.6.1 | Capa de velocidad (streaming) |
-| **Apache Spark (PySpark)** | 3.5.1 | Motor de procesamiento batch |
-| **Delta Lake** | 3.2.0 | Formato Lakehouse (ACID sobre object storage) |
-| **PostgreSQL** | 16 | Data Warehouse (Star Schema) |
-| **SeaweedFS** | latest | Data Lake (Object Storage S3-compatible; reemplaza a MinIO) |
-| **Apache Airflow** | 2.9.3 | Orquestación de pipelines |
-| **Streamlit** | 1.36.0 | Dashboard de monitoreo |
+| **Apache Kafka** | 7.6.1 en Compose | Servicio configurado; no verificado en las pruebas locales descritas |
+| **Apache Spark (PySpark)** | 3.5.1 en dependencias | Ruta opcional; el ETL documentado usó pandas/JSON |
+| **Delta Lake** | 3.2.0 en dependencias | Dependencia opcional; no se produjo tabla Delta en esta evidencia |
+| **PostgreSQL** | 16 en Compose | Servicio configurado; no probado en esta revisión |
+| **SeaweedFS** | imagen `latest` | Servicio configurado; no probado en esta revisión |
+| **Apache Airflow** | 2.9.3 en Compose/dependencias | DAG/servicio disponible; no ejecutado durante esta revisión |
+| **Streamlit** | 1.36.0 en dependencias | Dashboard local abierto durante las pruebas |
 | **Plotly** | 5.22.0 | Visualizaciones interactivas |
 | **Docker Compose** | V2 | Contenedores y orquestación de servicios |
 | **pandas** | 2.2.2 | Procesamiento de datos en memoria |
