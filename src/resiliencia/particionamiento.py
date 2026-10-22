@@ -167,7 +167,9 @@ class GestorParticionamiento:
         if self.estrategia == "geografica":
             shard_id = self._shard_fn.asignar_shard(registro.get("region", "centro"))
         else:
-            clave = registro.get("shard_key") or registro.get("cliente_id", "default")
+            # Usar una clave de alta cardinalidad. `shard_key` ya viene precalculada
+            # como shard_0..shard_N y volver a hashearla puede dejar shards vacíos.
+            clave = registro.get("cliente_id") or registro.get("shard_key", "default")
             shard_id = self._shard_fn.asignar_shard(clave)
 
         self._shards[shard_id].append(registro)
