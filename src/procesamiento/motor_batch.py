@@ -116,7 +116,7 @@ class MotorBatch:
         """
         import json
         import hashlib
-        from datetime import datetime
+        from datetime import datetime, timezone
 
         with open(ruta_raw, encoding="utf-8") as f:
             datos_raw = json.load(f)
@@ -152,7 +152,7 @@ class MotorBatch:
                 "shard_key": registro.get("shard_key", "shard_0"),
                 "score_riesgo": float(registro.get("score_riesgo", 0.0)),
                 "es_fraude": bool(registro.get("es_fraude_potencial", False)),
-                "_procesado_timestamp": datetime.utcnow().isoformat(),
+                "_procesado_timestamp": datetime.now(timezone.utc).isoformat(),
                 "_version": "silver_v2.1",
             }
             registros_limpios.append(registro_limpio)

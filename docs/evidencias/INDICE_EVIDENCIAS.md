@@ -1,6 +1,6 @@
 # Índice de evidencias
 
-Se copiaron aquí 25 capturas desde `docs/capturas_originales/`. Los archivos originales permanecen sin cambios. Las capturas son evidencia de las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
+Se copiaron aquí 26 capturas desde `docs/capturas_originales/`. Los archivos originales permanecen sin cambios. Las capturas son evidencia de las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
 
 | N.º | Archivo | Qué documenta |
 |---:|---|---|
@@ -29,12 +29,14 @@ Se copiaron aquí 25 capturas desde `docs/capturas_originales/`. Los archivos or
 | 23 | `23-modulo-drp-linea-base.png` | Simulacro DRP de línea base: 100 registros recuperados y 100 perdidos. |
 | 24 | `24-modulo-sharding-mejorado.png` | Resultado posterior: tres shards poblados, balance 88,1 %, sin hotspot. |
 | 25 | `25-modulo-drp-mejorado.png` | Resultado posterior: 200 registros recuperados, cero perdidos y cero brechas. |
+| 26 | `26-etl-terminal-integrada-vscode.png` | Terminal integrada de VS Code: primer intento con `NameError` por el import de `timezone` y ejecución posterior exitosa del ETL con 500 entradas, 499 válidas y 1 rechazada. |
 
 ## Cómo usarlas en el informe
 
 - Las capturas 8, 15, 16, 20 y 23 son resultados de línea base, anteriores a las mejoras de sharding y DRP.
 - Las capturas 24 y 25 muestran las ejecuciones posteriores a las mejoras correspondientes.
+- La captura 26 muestra Visual Studio Code y su terminal integrada, además del intento fallido durante la corrección y la ejecución exitosa posterior.
 - Las capturas 4 a 10 son fragmentos consecutivos de una misma ejecución de demo, no siete ejecuciones distintas.
 - Numerar las figuras del informe según el orden en que se citen; no es necesario insertar las 25 si algunas resultan repetitivas, pero conservar al menos 15 capturas pertinentes.
 - Añadir pies de figura que expliquen qué comando, sección o resultado se observa. No recortar ni retocar las capturas para alterar su contenido.
-- Para afirmar cumplimiento de la consigna docente sobre Visual Studio Code, comprobar que las capturas incluidas efectivamente muestran VS Code o su terminal integrada; varias imágenes son de terminal Linux y las del dashboard son del navegador.
+- Aunque ya existe una captura explícita de VS Code, confirmar que al menos 15 figuras del informe sean capturas de ejecución en VS Code, según la interpretación literal de la consigna; varias evidencias de línea base son de terminal Linux y las del dashboard son del navegador.

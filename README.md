@@ -345,7 +345,7 @@ El dashboard incluye:
 
 ### Módulos Individualmente
 
-Cada módulo es ejecutable de forma independiente con `python -m` o directamente:
+Ejecuta estos comandos desde la raíz del proyecto con el entorno virtual activado. El módulo DRP se invoca como módulo para que Python resuelva correctamente el paquete `src`:
 
 ```bash
 # Simular transacciones
@@ -364,7 +364,7 @@ python src/resiliencia/replicacion.py
 python src/procesamiento/motor_batch.py
 
 # Simular DRP completo con simulacro
-python src/recuperacion/plan_drp.py
+python -m src.recuperacion.plan_drp
 
 # Probar el sistema de observabilidad
 python src/monitoreo/observabilidad.py
