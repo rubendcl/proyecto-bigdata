@@ -17,3 +17,4 @@ datos/lakehouse/gold/kpis_*.json
 
 # Registros locales
 logs/
+docs/capturas_originales/
