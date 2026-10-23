@@ -1,6 +1,6 @@
 # Índice de evidencias
 
-Se copiaron aquí 37 capturas desde `docs/capturas_originales/`. Los archivos originales permanecen sin cambios. Las capturas son evidencia de las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
+Se conservan aquí las 37 capturas originales provenientes de `docs/capturas_originales/` y se añadió una captura posterior de terminal. Los archivos originales permanecen sin cambios. Las imágenes documentan las ejecuciones e interfaces mostradas; los valores aleatorios y las métricas de simulación pueden variar entre corridas.
 
 | N.º | Archivo | Qué documenta |
 |---:|---|---|
@@ -41,6 +41,8 @@ Se copiaron aquí 37 capturas desde `docs/capturas_originales/`. Los archivos or
 | 35 | `35-drp-vscode.png` | Ejecución individual del DRP en VS Code: 200 registros recuperados, cero perdidos, RTO 0,01 min y RPO 0,03 min. |
 | 36 | `36-etl-vscode.png` | Ejecución individual del ETL en VS Code: 500 entradas, 494 válidas, 6 rechazadas, throughput de 12.043 registros/s y KPIs Gold. |
 | 37 | `37-observabilidad-vscode.png` | Ejecución individual de observabilidad en VS Code: 98 mensajes, 2 errores (2,04 %), 8 alertas de fraude y cero alertas activas. |
+| 38 | `38-medicion-shard-determinista.txt` | Registro textual de la medición reproducible: 3 semillas y 3 tamaños de lote; la salida fue confirmada por el usuario. |
+| 39 | `39-medicion-shard-terminal.png` | Captura auténtica de terminal con el comando y las nueve mediciones. No muestra el marco de VS Code, por lo que no se cuenta entre las capturas explícitas de ese IDE. |
 
 ## Cómo usarlas en el informe
 
@@ -54,3 +56,4 @@ Se copiaron aquí 37 capturas desde `docs/capturas_originales/`. Los archivos or
 - Numerar las figuras del informe según el orden en que se citen; no es necesario insertar las 25 si algunas resultan repetitivas, pero conservar al menos 15 capturas pertinentes.
 - Añadir pies de figura que expliquen qué comando, sección o resultado se observa. No recortar ni retocar las capturas para alterar su contenido.
 - Doce capturas explícitas corresponden a ejecución en VS Code (26–37). Confirmar que al menos 15 figuras del informe sean capturas únicas de ejecución en VS Code, según la interpretación literal de la consigna; por ahora faltan 3 capturas adicionales para llegar a esa meta.
+- La evidencia 38 es un registro textual y la evidencia 39 es una captura auténtica de terminal. La captura 39 documenta la salida, pero no permite confirmar visualmente que la ejecución ocurrió dentro de VS Code.

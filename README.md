@@ -317,6 +317,9 @@ python demo.py --bloque 5    # Replicación y Particionamiento
 
 # Modo verbose (muestra logs internos)
 python demo.py --completo
+
+# Medir asignación determinista región-cliente en varios lotes y semillas
+python scripts/medir_distribucion_shard.py --semillas 17 41 93 --lotes 100 500 1000
 ```
 
 **Salida ilustrativa — ejemplo Bloque 3** (los resultados cambian por el carácter aleatorio de la simulación):

@@ -10,6 +10,7 @@ Genera transacciones financieras sintéticas para demostrar los conceptos de:
 Caso de uso: Sistema de monitoreo de transacciones bancarias.
 """
 
+import hashlib
 import random
 import uuid
 from datetime import datetime, timezone
@@ -34,12 +35,17 @@ BANCOS = ["BNB", "Banco Unión", "Banco Mercantil", "BCP", "Banco FIE"]
 
 def _determinar_shard(cliente_id: str, region: str, num_shards: int = 3) -> str:
     """
-    Calcula la clave de shard usando hashing consistente.
-    Particionamiento horizontal: las filas se distribuyen entre shards
-    según una clave de partición (cliente_id + región).
+    Asigna una clave compuesta cliente-región de forma estable entre procesos.
+
+    Usa SHA-256 y módulo por el número de shards. Es hashing determinista,
+    no hashing consistente; cambiar el número de shards puede reasignar claves.
     """
-    clave_compuesta = f"{region}_{cliente_id}"
-    indice_shard = hash(clave_compuesta) % num_shards
+    if num_shards <= 0:
+        raise ValueError("num_shards debe ser un entero positivo")
+
+    clave_compuesta = f"{region.strip().lower()}:{cliente_id.strip()}"
+    digest = hashlib.sha256(clave_compuesta.encode("utf-8")).digest()
+    indice_shard = int.from_bytes(digest[:8], byteorder="big") % num_shards
     return f"shard_{indice_shard}"
 
 

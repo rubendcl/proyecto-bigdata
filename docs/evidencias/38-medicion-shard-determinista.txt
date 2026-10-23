@@ -1,0 +1,16 @@
+Semilla  Lote  shard_0  shard_1  shard_2  Balance
+     17   100       32       28       40    70.0%
+     17   500      167      179      154    86.0%
+     17  1000      315      350      335    90.0%
+     41   100       38       39       23    59.0%
+     41   500      169      182      149    81.9%
+     41  1000      317      372      311    83.6%
+     93   100       32       34       34    94.1%
+     93   500      175      166      159    90.9%
+     93  1000      352      324      324    92.0%
+
+Nota: balance = mínimo/máximo; resultado de simulación, no SLA.
+
+Comprobación separada: CLI-1234 + Centro se asignó a shard_2 en cinco procesos Python independientes.
+
+El usuario ejecutó el mismo comando desde la terminal integrada de VS Code y compartió una salida idéntica. Este archivo conserva el registro textual; la captura PNG de la ventana aún debe añadirse por separado.
